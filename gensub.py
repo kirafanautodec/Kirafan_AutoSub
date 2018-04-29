@@ -40,7 +40,7 @@ if(not os.path.isabs(output)):
 os.makedirs(output, exist_ok=True)
 
 # timestamp file
-timestampfn = output + '/timestamp.txt'
+timestampfn = filepwd + '/sub/timestamp.txt'
 timestampfp = open(timestampfn, mode='w', encoding='utf-8')
 
 # COLOR DEFINITION
