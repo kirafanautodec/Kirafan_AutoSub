@@ -18,12 +18,15 @@ parser.add_option('-i', '--input',
 parser.add_option('--gray_threshold',
     action="store", dest="gray_threshold",
     help="gray_threshold of binarization", default=160)
-parser.add_option('--textpos_threshold',
-    action="store", dest="textpos_threshold",
-    help="text position detection threshold", default=5)
-parser.add_option('--wait_frame_threshold',
-    action="store", dest="wait_frame_threshold",
-    help="text pause detection threshold in frame", default=2)
+parser.add_option('--typed_speed',
+    action="store", dest="typed_speed",
+    help="typed effect(text rolling) speed, char per s", default=5)
+parser.add_option('--fontsize',
+    action="store", dest="fontsize",
+    help="font size of translated", default=36)
+parser.add_option('--ffmpeg_encoder',
+    action="store", dest="ffmpeg_encoder",
+    help="ffmpeg encoder, default = libx264, use h264_nvenc if available", default="libx264")
 
 options, args = parser.parse_args()
 if (not options.input):
@@ -38,6 +41,7 @@ filepwd = os.path.dirname(os.path.abspath(options.input))
 print("Work directory: " + filepwd)
     
 frame_cmds = {}
+frame_subindex = {}
 # read timestampfile
 timestampfn = filepwd + '/sub/timestamp.txt'
 with open(timestampfn, mode='r', encoding='utf-8') as fp:
@@ -52,6 +56,9 @@ with open(timestampfn, mode='r', encoding='utf-8') as fp:
         action = cmds[1]
         if (action == 'S' or action == 'E' or action == 'C'):
             frame_cmds[frame] = action
+        if (action == 'S'):
+            subindex = int(cmds[2])
+            frame_subindex[frame] = subindex
 # read translation the main text
 trans = []
 transfn = filepwd + '/sub/trans.txt'
@@ -126,7 +133,7 @@ fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
 out_video = cv2.VideoWriter(out_name, int(fourcc), fps, (int(width), int(height)))
 
 frame = 0
-font_text = ImageFont.truetype(fontf, 36)
+font_text = ImageFont.truetype(fontf, int(options.fontsize))
 img_nmtg_blank = cv2.imread(nmtgf)
 
 # static string
@@ -143,7 +150,7 @@ while(video.isOpened()):
     time = frame / fps
     frame += 1
     
-# Iphone's video is rotated
+    # Iphone's video is rotated
     img_rot = np.rot90(img)
     # ROI of TextArea and NameTag
     img_crop = img_rot[520:740, 80:1180]
@@ -169,7 +176,7 @@ while(video.isOpened()):
             print(frame, "C")
         if (cmd == 'S'):
             last_typed_start = frame
-            index_sub += 1
+            index_sub = frame_subindex[frame]
             str_typed_cache = trans[index_sub]
             print(frame, "S")
             print(str_typed_cache)
@@ -200,18 +207,24 @@ while(video.isOpened()):
 
     img_pil = Image.fromarray(img_inpaint)
     draw = ImageDraw.Draw(img_pil)
-    str_typed_render = str_typed_cache[:min(len(str_typed_cache), int(10*(frame - last_typed_start + 1)))]
+    str_typed_render = str_typed_cache[:min(len(str_typed_cache), int(float(options.typed_speed) * (frame - last_typed_start + 1)))]
     str_splited = (str_todraw + str_typed_render).split('\n')
-    if (len(str_splited) == 1):
-        draw.text((170,  87), str_splited[0], font = font_text, fill = (60,66,111))
-    elif (len(str_splited) == 2):
-        draw.text((170,  87), str_splited[0], font = font_text, fill = (60,66,111))
-        draw.text((170, 144), str_splited[1], font = font_text, fill = (60,66,111))
+    font_w, font_h = draw.textsize("LIPFgYTjyXSq|^#%", font = font_text)
+    for (lineindex, text_line) in enumerate(str_splited):
+        draw_x = 170
+        draw_y0 = 162 if (lineindex > 0) else 105
+        for (spanindex, text_span) in enumerate(text_line.split('$')):
+            color = (60, 66, 111) if (spanindex % 2 == 0) else (150, 106, 255)
+            span_w, span_h = draw.textsize(text_span, font = font_text)
+            draw_y = draw_y0 - font_h / 2
+            draw.text((draw_x, draw_y), text_span, fill = color, font = font_text)
+            draw_x += span_w
+        
     if (is_blank and len(nmtgs[index_sub])):
         img_draw_nmtg = Image.new("RGB", (400, 50))
         draw_nmtg = ImageDraw.Draw(img_draw_nmtg)
         w_nmtg, h_nmtg = draw.textsize(nmtgs[index_sub], font=font_text)
-        draw.text((207-w_nmtg/2, 30-h_nmtg/2), nmtgs[index_sub], fill = (255,255,255), font = font_text)
+        draw.text((207 - font_h / 2, 30 - font_h / 2), nmtgs[index_sub], fill = (255,255,255), font = font_text)
 
     img_drawed = np.array(img_pil)
     img_rot[520:740, 80:1180] = img_drawed
@@ -224,7 +237,7 @@ out_video.release()
 
 ffcmd = "ffmpeg -y -vn -i " + video_name + " -acodec copy " + video_name + ".aac"
 print (ffcmd)
-subprocess.call(ffcmd, shell=False)
-ffcmd = "ffmpeg -i " + out_name + " -i " + video_name + ".aac " + " -vcodec h264_nvenc -preset slow -profile:v high -level:v 4.1 -pix_fmt yuv420p -b:v 1780k -r 30 -acodec aac -strict -2 -ac 2 -ab 192k -ar 44100 -f flv -t 30 " + video_name + ".out.flv"
+subprocess.call(ffcmd, shell=True)
+ffcmd = "ffmpeg -i " + out_name + " -i " + video_name + ".aac " + " -vcodec " + options.ffmpeg_encoder + " -preset slow -profile:v high -level:v 4.1 -pix_fmt yuv420p -b:v 1780k -r 30 -acodec aac -strict -2 -ac 2 -ab 192k -ar 44100 -f flv " + video_name + ".out.flv"
 print (ffcmd)
-subprocess.call(ffcmd, shell=False)
+subprocess.call(ffcmd, shell=True)
