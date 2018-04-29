@@ -2,7 +2,7 @@
 ## What does it do
 A tool for replacing the Japanese text of Kirara Fantasia's story video.
 
-Here are a some preview
+Here are some previews
 * English Subtitled:  https://www.youtube.com/watch?v=02bVCTl3CUw
 * Korean Subtitled:   https://www.youtube.com/watch?v=z7U6aLHBbV4
 
