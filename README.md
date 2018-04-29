@@ -1,6 +1,8 @@
 # Kirafan_AutoSub
 ## What does it do
 A tool for replacing the Japanese text of Kirara Fantasia's story video.
+
+Here is a preview https://www.youtube.com/watch?v=RECYWkwCW5E
 ## How it works
 ### gensub.py
 Detect the TextArea and NameTag and extract
