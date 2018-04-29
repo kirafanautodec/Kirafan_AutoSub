@@ -22,7 +22,7 @@ Contains n lines, n equals the quantity of generated text_%04d.jpg files.
 ## Usage
 * python3 gensub.py -i <videofile_captured_by_Iphone_1334*750>
 * create translated 'sub/trans.txt'. and 'sub/nmtgs.txt'. file.
-* python2 applysub.py -i <videofile_captured_by_Iphone_1334*750>
+* python3 applysub.py -i <videofile_captured_by_Iphone_1334*750>
 
 ## Dependence
 python3, opencv2, Pillow, ffmpeg
