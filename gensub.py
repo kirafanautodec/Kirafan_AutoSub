@@ -207,7 +207,6 @@ while(video.isOpened()):
                 img_line_last = img_line[:, last_textpos_store:textpos]
                 img_line_last_color = img_line_color[:, last_textpos_store:textpos]
                 cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".jpg", img_line_last_color)
-                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".jpg", img_line_last_color)
                 cv2.imwrite(output + "/nmtg_" + ("%04d"%index_sub)+".jpg", img_nmtag)
                 index_sub += 1
                 last_textpos_store = textpos
