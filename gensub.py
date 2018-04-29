@@ -28,7 +28,7 @@ if (not options.input):
     print("Missing argument for option 'i'.")
     exit(-1)
 if (not os.path.isfile(options.input)):
-    print("Can not open subtitle file " + options.input)
+    print("Can not open video file " + options.input)
     exit(-1)
     
 # output dir
@@ -110,6 +110,9 @@ storing = 0
 # index of subtitle
 index_sub = 0
 
+# blank in last frame
+is_blank_last = -1
+
 while(video.isOpened()):
     ret, img = video.read()
     if not ret:
@@ -171,6 +174,15 @@ while(video.isOpened()):
     if (abs(textpos - last_textpos) > int(options.textpos_threshold)):
         is_textpos_changed = 1 if (textpos - last_textpos) > 0 else -1 
 
+    if (not is_blank_last == int(is_blank)):
+        if (is_blank):
+            print ("TextArea In", frame)
+            timestampfp.write(str(frame) + " T\n")
+        else:
+            print ("TextArea Out", frame)
+            timestampfp.write(str(frame) + " X\n")
+        is_blank_last = int(is_blank)
+    
     # NO TEXT, waiting for a new line
     if (status == 0):
         # Start of a Line
@@ -222,4 +234,6 @@ while(video.isOpened()):
     cv2.waitKey(1)
     last_textpos = textpos
 
+print ("All End", frame)
+timestampfp.write(str(frame) + " O\n")
 video.release()
