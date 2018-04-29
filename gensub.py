@@ -28,7 +28,7 @@ if (not options.input):
     print("Missing argument for option 'i'.")
     exit(-1)
 if (not os.path.isfile(options.input)):
-    print("Can not open subtitle file " + option.input)
+    print("Can not open subtitle file " + options.input)
     exit(-1)
     
 # output dir
@@ -144,6 +144,10 @@ while(video.isOpened()):
     img_line1 = img_bin[145-2:185-2, 165:1000]
     # Concat 2 lines horizontally
     img_line = np.concatenate((img_line0, img_line1), axis=1)
+    
+    img_line0_color = img_crop[90-2:130-2, 165:1000]
+    img_line1_color = img_crop[145-2:185-2, 165:1000]
+    img_line_color = np.concatenate((img_line0_color, img_line1_color), axis=1)
     if (frame == 0):
         img_line_last = img_line
 
@@ -201,7 +205,9 @@ while(video.isOpened()):
                 timestampfp.write(str(frame_real) + " E " + str(index_sub) + "\n")
                 storing = 0
                 img_line_last = img_line[:, last_textpos_store:textpos]
-                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".jpg", img_line_last)
+                img_line_last_color = img_line_color[:, last_textpos_store:textpos]
+                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".jpg", img_line_last_color)
+                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".jpg", img_line_last_color)
                 cv2.imwrite(output + "/nmtg_" + ("%04d"%index_sub)+".jpg", img_nmtag)
                 index_sub += 1
                 last_textpos_store = textpos
