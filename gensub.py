@@ -12,7 +12,7 @@ parser.add_option('-i', '--input',
     help="input file of video file")
 parser.add_option('-o', '--output',
     action="store", dest="output",
-    help="output directory of generated files", default="sub")
+    help="output directory of generated files", default="jpn")
 parser.add_option('--gray_threshold',
     action="store", dest="gray_threshold",
     help="gray_threshold of binarization", default=160)
