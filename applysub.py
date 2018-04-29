@@ -8,7 +8,7 @@ import codecs
 import subprocess
 
 python_dir = os.path.dirname(os.path.abspath(__file__))
-fontf = python_dir + "/usr/cnfont.ttf"
+fontf = python_dir + "/usr/font.ttf"
 nmtgf = python_dir + "/usr/nmtg.png"
 
 parser = optparse.OptionParser()
