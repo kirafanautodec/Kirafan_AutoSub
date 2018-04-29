@@ -26,5 +26,6 @@ Contains n lines, n equals the quantity of generated text_%04d.jpg files.
 
 ## Dependence
 python3, opencv2, Pillow, ffmpeg
+
 I used h264_nvenc, if your PC do not support that please change ffmpeg parameters in applysub.py
 
