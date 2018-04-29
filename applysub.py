@@ -224,7 +224,7 @@ while(video.isOpened()):
         img_draw_nmtg = Image.new("RGB", (400, 50))
         draw_nmtg = ImageDraw.Draw(img_draw_nmtg)
         w_nmtg, h_nmtg = draw.textsize(nmtgs[index_sub], font=font_text)
-        draw.text((207 - font_h / 2, 30 - font_h / 2), nmtgs[index_sub], fill = (255,255,255), font = font_text)
+        draw.text((207 - w_nmtg / 2, 30 - font_h / 2), nmtgs[index_sub], fill = (255,255,255), font = font_text)
 
     img_drawed = np.array(img_pil)
     img_rot[520:740, 80:1180] = img_drawed
