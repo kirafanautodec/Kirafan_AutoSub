@@ -17,9 +17,14 @@ Apply the translated subtitle to the original video
 
 #### Format of nmtgs.txt
 Contains n lines, n equals the quantity of generated nmtg_%04d.jpg files.
+
+Every lines is a translated name of corresponding Japanese named of nmtg_%04d.jpg.
 #### Format of trans.txt
 Contains n lines, n equals the quantity of generated text_%04d.jpg files.
-'\n' for a newline inside the script.
+
+Every lines is a translated script of corresponding Japanese text of text_%04d.jpg.
+
+Do not input a newline evenif the Japanese text contains 2 lines. use '\n' instead.
 
 ## Usage
 * python3 gensub.py -i <videofile_captured_by_Iphone_1334*750>
