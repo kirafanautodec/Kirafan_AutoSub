@@ -23,7 +23,7 @@ parser.add_option('--blank_extra_pre',
     help="inpaint blank before textarea completely reach its position", default=3)
 parser.add_option('--nmtg_extra_pre',
     action="store", dest="nmtg_pre",
-    help="inpaint nmtg before textarea completely reach its position", default=1)
+    help="inpaint nmtg before textarea completely reach its position", default=0)
 parser.add_option('--blank_extra_sub',
     action="store", dest="blank_sub",
     help="inpaint blank after textarea start to disappear", default=0)
