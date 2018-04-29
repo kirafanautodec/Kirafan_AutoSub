@@ -39,7 +39,7 @@ print("Work directory: " + filepwd)
     
 frame_cmds = {}
 # read timestampfile
-timestampfn = filepwd + 'sub/timestamp.txt'
+timestampfn = filepwd + '/sub/timestamp.txt'
 with open(timestampfn, mode='r', encoding='utf-8') as fp:
     text = fp.read()
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
@@ -54,7 +54,7 @@ with open(timestampfn, mode='r', encoding='utf-8') as fp:
             frame_cmds[frame] = action
 # read translation the main text
 trans = []
-transfn = output + '/trans.txt'
+transfn = filepwd + '/sub/trans.txt'
 with open(transfn, mode='r', encoding='utf-8') as fp:
     text = fp.read()
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
@@ -65,7 +65,7 @@ with open(transfn, mode='r', encoding='utf-8') as fp:
 
 # read translation name
 nmtgs = []
-nmtgsfn = output + '/nmtgs.txt'
+nmtgsfn = filepwd + '/sub/nmtgs.txt'
 with open(nmtgsfn, mode='r', encoding='utf-8') as fp:
     text = fp.read()
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
