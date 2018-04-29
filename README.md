@@ -3,7 +3,7 @@
 A tool for replacing the Japanese text of Kirara Fantasia's story video.
 
 Here are some previews
-* English Subtitled:  https://www.youtube.com/watch?v=02bVCTl3CUw
+* English Subtitled:  https://youtu.be/Z8BytfESak0
 * Korean Subtitled:   https://youtu.be/_6IlXAgpsEs
 
 ## How it works
