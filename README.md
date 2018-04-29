@@ -2,7 +2,10 @@
 ## What does it do
 A tool for replacing the Japanese text of Kirara Fantasia's story video.
 
-Here is a preview https://www.youtube.com/watch?v=RECYWkwCW5E
+Here are a some preview
+* English Subtitled:  https://www.youtube.com/watch?v=02bVCTl3CUw
+* Korean Subtitled:   https://www.youtube.com/watch?v=z7U6aLHBbV4
+
 ## How it works
 ### gensub.py
 Detect the TextArea and NameTag and extract
