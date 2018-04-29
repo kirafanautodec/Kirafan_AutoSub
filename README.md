@@ -4,7 +4,7 @@ A tool for replacing the Japanese text of Kirara Fantasia's story video.
 
 Here are some previews
 * English Subtitled:  https://www.youtube.com/watch?v=02bVCTl3CUw
-* Korean Subtitled:   https://www.youtube.com/watch?v=z7U6aLHBbV4
+* Korean Subtitled:   https://www.youtube.com/watch?v=B-eIqu2fRs0
 
 ## How it works
 ### gensub.py
