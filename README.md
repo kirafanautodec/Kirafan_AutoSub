@@ -26,16 +26,20 @@ Every lines is a translated script of corresponding Japanese text of text_%04d.j
 
 Do not input a newline evenif the Japanese text contains 2 lines. use '\n' instead.
 
+For colored text, use a pair of $.
+
+> Hmm, where would be a good place to start...\nKirara, you've read the $scriptures$, right?
+> Yes. \n$The goddess$ granted it to us, didn't she?
+
+
 ## Usage
 * python3 gensub.py -i <videofile_captured_by_Iphone_1334*750>
 * create translated 'sub/trans.txt'. and 'sub/nmtgs.txt'. file.
 * python3 applysub.py -i <videofile_captured_by_Iphone_1334*750>
 
 ## Dependence
-python3, opencv2, Pillow, ffmpeg
+python3, opencv2, Pillow, ffmpeg, a truetype font putted in 'usr/font.ttf'
 
 ## Comment
 Please put your favourite font in 'usr/font.ttf'
-
-I used h264_nvenc, if your PC do not support that please change ffmpeg parameters in applysub.py
 
