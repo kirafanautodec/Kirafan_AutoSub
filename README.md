@@ -29,6 +29,7 @@ Do not input a newline evenif the Japanese text contains 2 lines. use '\n' inste
 For colored text, use a pair of $.
 
 > Hmm, where would be a good place to start...\nKirara, you've read the $scriptures$, right?
+
 > Yes. \n$The goddess$ granted it to us, didn't she?
 
 
