@@ -41,6 +41,7 @@ os.makedirs(output, exist_ok=True)
 
 # timestamp file
 timestampfn = filepwd + '/sub/timestamp.txt'
+os.makedirs(filepwd + '/sub', exist_ok=True)
 timestampfp = open(timestampfn, mode='w', encoding='utf-8')
 
 # COLOR DEFINITION
