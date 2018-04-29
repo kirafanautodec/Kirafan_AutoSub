@@ -7,8 +7,8 @@ Here is a preview https://www.youtube.com/watch?v=RECYWkwCW5E
 ### gensub.py
 Detect the TextArea and NameTag and extract
 * Timestamp (in frame) into a txt file.
-* Japanese characters int TextArea into text_%04d.jpg file (OCR does not work perfectly.)
-* Japanese characters int NameTag into nmtg_%04d.jpg file (OCR does not work perfectly.)
+* Japanese characters int TextArea into jpn/text_%04d.jpg file (OCR does not work perfectly.)
+* Japanese characters int NameTag into jpn/nmtg_%04d.jpg file (OCR does not work perfectly.)
 ### applysub.py
 Apply the translated subtitle to the original video
 * Read the Timestamp file.
