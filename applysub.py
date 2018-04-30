@@ -9,7 +9,7 @@ import subprocess
 
 python_dir = os.path.dirname(os.path.abspath(__file__))
 fontf = python_dir + "/usr/font.ttf"
-nmtgf = python_dir + "/usr/nmtg.png"
+nmtg_blank_f = python_dir + "/usr/nmtg.png"
 
 parser = optparse.OptionParser()
 parser.add_option('-i', '--input',
@@ -47,7 +47,9 @@ if (not os.path.isfile(options.input)):
     
 # input dir
 filepwd = os.path.dirname(os.path.abspath(options.input))
-print("Work directory: " + filepwd)
+print("Video directory: " + filepwd)
+subpwd = options.input + '_autosub'
+print("Subtitel directory: " + subpwd)
     
 frame_cmds = {}
 frame_subindex = {}
@@ -56,7 +58,7 @@ frame_havenmtg = {}
 frame_index_temp = 0
 frame_index_temp1 = 0
 # read timestampfile
-timestampfn = filepwd + '/sub/timestamp.txt'
+timestampfn = subpwd + '/' + 'timestamp.txt'
 with open(timestampfn, mode='r', encoding='utf-8') as fp:
     text = fp.read()
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
@@ -93,30 +95,19 @@ with open(timestampfn, mode='r', encoding='utf-8') as fp:
             for i in range(frame_index_temp1, frame + 1):
                 frame_havenmtg[i] = False
             frame_index_temp1 = frame
-#print (frame_haveblank)
-# read translation the main text
-trans = []
-transfn = filepwd + '/sub/trans.txt'
-with open(transfn, mode='r', encoding='utf-8') as fp:
+
+# read translation
+import json
+subtitlefn = subpwd + '/' + os.path.basename(options.input) + '_subtitle.txt'
+with open(subtitlefn, mode='r', encoding='utf-8') as fp:
     text = fp.read()
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
         text = text[1:]
-    for line in text.split('\n'):
-        t = line.replace('\\n','\n')
-        trans.append(t)
+    text = text[9:-1]
+    subjson = json.loads(text)
 
-# read translation name
-nmtgs = []
-nmtgsfn = filepwd + '/sub/nmtgs.txt'
-with open(nmtgsfn, mode='r', encoding='utf-8') as fp:
-    text = fp.read()
-    if (text[0].encode('utf-8') == codecs.BOM_UTF8):
-        text = text[1:]
-    for line in text.split('\n'):
-        nmtgs.append(line)
-
-print (trans)
-print (nmtgs)
+print (subjson["trans"])
+print (subjson["nmtgs"])
 
 video_name = options.input
 video = cv2.VideoCapture(video_name)
@@ -131,7 +122,7 @@ out_video = cv2.VideoWriter(out_name, int(fourcc), fps, (int(width), int(height)
 
 frame = 0
 font_text = ImageFont.truetype(fontf, int(options.fontsize))
-img_nmtg_blank = cv2.imread(nmtgf)
+img_nmtg_blank = cv2.imread(nmtg_blank_f)
 
 # static string
 str_todraw = ''
@@ -160,7 +151,7 @@ while(video.isOpened()):
         if (cmd == 'S'):
             last_typed_start = frame
             index_sub = frame_subindex[frame]
-            str_typed_cache = trans[index_sub]
+            str_typed_cache = subjson["trans"][index_sub].replace('\\n', '\n')
             print(frame, "S")
             print(str_typed_cache)
         if (cmd == 'E'):
@@ -191,7 +182,8 @@ while(video.isOpened()):
     else:
         img_inpaint = img_crop
 
-    if (is_nmtg and len(nmtgs[index_sub])):
+    nmtg = subjson["nmtgs"][index_sub]
+    if (is_nmtg and len(nmtg)):
         img_inpaint[5:55, 5:405] = img_nmtg_blank
         
     if (is_blank):
@@ -210,11 +202,11 @@ while(video.isOpened()):
                 draw.text((draw_x, draw_y), text_span, fill = color, font = font_text)
                 draw_x += span_w
         
-    if (is_nmtg and len(nmtgs[index_sub])):
+    if (is_nmtg and len(nmtg)):
         img_draw_nmtg = Image.new("RGB", (400, 50))
         draw_nmtg = ImageDraw.Draw(img_draw_nmtg)
-        w_nmtg, h_nmtg = draw.textsize(nmtgs[index_sub], font=font_text)
-        draw.text((207 - w_nmtg / 2, 30 - font_h / 2), nmtgs[index_sub], fill = (255,255,255), font = font_text)
+        w_nmtg, h_nmtg = draw.textsize(nmtg, font=font_text)
+        draw.text((207 - w_nmtg / 2, 30 - font_h / 2), nmtg, fill = (255,255,255), font = font_text)
 
     if (is_blank):
         img_drawed = np.array(img_pil)
