@@ -10,9 +10,6 @@ parser = optparse.OptionParser()
 parser.add_option('-i', '--input',
     action="store", dest="input",
     help="input file of video file")
-parser.add_option('-o', '--output',
-    action="store", dest="output",
-    help="output directory of generated files", default="jpn")
 parser.add_option('--gray_threshold',
     action="store", dest="gray_threshold",
     help="gray_threshold of binarization", default=160)
@@ -32,23 +29,18 @@ if (not os.path.isfile(options.input)):
     exit(-1)
     
 # output dir
-filepwd = os.path.dirname(os.path.abspath(options.input))
+filepwd = options.input + '_autosub'
 print("Work directory: " + filepwd)
-output = options.output + '/'
-if(not os.path.isabs(output)):
-    output = filepwd + '/' + output    
+output = filepwd + '/' + 'img'    
 os.makedirs(output, exist_ok=True)
 
 # timestamp file
-timestampfn = filepwd + '/sub/timestamp.txt'
-os.makedirs(filepwd + '/sub', exist_ok=True)
+timestampfn = filepwd + '/timestamp.txt'
 timestampfp = open(timestampfn, mode='w', encoding='utf-8')
 
 # COLOR DEFINITION
 BLANK_COLOR_MAX = (250, 256, 256)
 BLANK_COLOR_MIN = (190, 190, 210)
-NMTAG_COLOR_MAX = ( 69,  98, 140)
-NMTAG_COLOR_MIN = ( 49,  78, 120)
 
 # blank color of textarea?
 def is_blank_p(p):
@@ -56,14 +48,8 @@ def is_blank_p(p):
             (BLANK_COLOR_MAX[0] > p[0] > BLANK_COLOR_MIN[0]) and \
             (BLANK_COLOR_MAX[1] > p[1] > BLANK_COLOR_MIN[1]) and \
             (BLANK_COLOR_MAX[2] > p[2] > BLANK_COLOR_MIN[2])
-# nametag color?
-def is_nmtag_p(p):
-    return \
-            (NMTAG_COLOR_MAX[0] > p[0] > NMTAG_COLOR_MIN[0]) and \
-            (NMTAG_COLOR_MAX[1] > p[1] > NMTAG_COLOR_MIN[1]) and \
-            (NMTAG_COLOR_MAX[2] > p[2] > NMTAG_COLOR_MIN[2])
             
-def is_blank_func(im0, im1, im2):
+def is_blank_func(im0, im1):
     i0 = np.asarray(im0)
     i1 = np.asarray(im1)
     for ln in i0:
@@ -76,14 +62,16 @@ def is_blank_func(im0, im1, im2):
                 return False
     return True
 
-def is_nmtag_func(im2):
-    i2 = np.asarray(im2)
-    for ln in i2:
-        for p in ln:
-            if not is_nmtag_p(p):
-                return False
-    return True
-
+# POSITION DEFINITION
+ROI = (slice(520, 740), slice(80, 1180))
+ROI_JUDGE0 = (slice(78, 80), slice(130, 1000))
+ROI_JUDGE1 = (slice(183, 185), slice(130, 1000))
+ROI_NMTAG = (slice(10, 50), slice(5, 405))
+LINE_START = 165
+LINE_LENGTH = 835
+LINE_HEIGHT = 40
+ROI_LINE0 = (slice(88, 88 + LINE_HEIGHT), slice(LINE_START, LINE_START + LINE_LENGTH))
+ROI_LINE1 = (slice(143, 143 + LINE_HEIGHT), slice(LINE_START, LINE_START + LINE_LENGTH))
 
 # input video
 video_name = options.input
@@ -94,7 +82,6 @@ frame = 0
 # last character position of textarea
 last_textpos = 0
 last_change = 0
-img_line_last = 0
 last_textpos_store = 0
 
 # Status
@@ -123,36 +110,32 @@ while(video.isOpened()):
     # Iphone's video is rotated
     img_rot = np.rot90(img)
     # ROI of TextArea and NameTag
-    img_crop = img_rot[520:740, 80:1180]
-
+    img_crop = img_rot[ROI]
     # Judge ROI of TextArea
-    img_judge0 = img_crop[78:80, 130:1000]
-    img_judge1 = img_crop[183:185, 130:1000]
-    # Judge ROI of NameTag
-    img_judge2 = img_crop[50:52, 150:400]
+    img_judge0 = img_crop[ROI_JUDGE0]
+    img_judge1 = img_crop[ROI_JUDGE1]
     # TextArea exist?
-    is_blank = is_blank_func(img_judge0, img_judge1, img_judge2)
-    # NameTag exist?
-    is_nmtag = is_nmtag_func(img_judge2)
+    is_blank = is_blank_func(img_judge0, img_judge1)
 
     # binarization
     img_gray = cv2.cvtColor(img_crop, cv2.COLOR_BGR2GRAY)
     retval, img_bin = cv2.threshold(img_gray, int(options.gray_threshold), 255, cv2.THRESH_BINARY)
 
     # Invert NameTag Area
-    img_nmtag = cv2.bitwise_not(img_bin[10:50, 5: 405])
+    img_nmtag = cv2.bitwise_not(img_bin[ROI_NMTAG])
     # The fisrt line of TextArea
-    img_line0 = img_bin[90-2:130-2, 165:1000]
+    img_line0 = img_bin[ROI_LINE0]
     # The second line of TextArea
-    img_line1 = img_bin[145-2:185-2, 165:1000]
+    img_line1 = img_bin[ROI_LINE1]
     # Concat 2 lines horizontally
     img_line = np.concatenate((img_line0, img_line1), axis=1)
     
-    img_line0_color = img_crop[90-2:130-2, 165:1000]
-    img_line1_color = img_crop[145-2:185-2, 165:1000]
-    img_line_color = np.concatenate((img_line0_color, img_line1_color), axis=1)
-    if (frame == 0):
-        img_line_last = img_line
+    img_line0_color = img_crop[ROI_LINE0]
+    img_line1_color = img_crop[ROI_LINE1]
+    img_line0_color = cv2.bitwise_or(img_line0_color, cv2.cvtColor(img_line0, cv2.COLOR_GRAY2BGR))
+    img_line1_color = cv2.bitwise_or(img_line1_color, cv2.cvtColor(img_line1, cv2.COLOR_GRAY2BGR))
+    if (frame == 1):
+        img_line_color = np.concatenate((img_line0_color, img_line1_color), axis=0)
 
     # If TextArea does not exits
     # clear the textarealine
@@ -216,10 +199,21 @@ while(video.isOpened()):
                 print ("End", frame_real)
                 timestampfp.write(str(frame_real) + " E " + str(index_sub) + "\n")
                 storing = 0
-                img_line_last = img_line[:, last_textpos_store:textpos]
-                img_line_last_color = img_line_color[:, last_textpos_store:textpos]
-                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".jpg", img_line_last_color)
-                cv2.imwrite(output + "/nmtg_" + ("%04d"%index_sub)+".jpg", img_nmtag)
+                #img_line_last = img_line[:, last_textpos_store:textpos]
+                img_line0_color_c = img_line0_color.copy()
+                img_line1_color_c = img_line1_color.copy()
+                cv2.line(img_line0_color_c, \
+                         (last_textpos_store + 10, 30), (textpos, 30), \
+                         (127, 255, 0), 20)
+                cv2.line(img_line1_color_c, \
+                         (last_textpos_store + 10 - LINE_LENGTH, 30), (textpos - LINE_LENGTH, 30), \
+                         (127, 255, 0), 20)
+                img_line_color_o = np.concatenate((img_line0_color, img_line1_color), axis=0)
+                img_line_color_c = np.concatenate((img_line0_color_c, img_line1_color_c), axis=0)
+                img_line_color = cv2.addWeighted(img_line_color_o, 0.85, img_line_color_c, 0.15, 1)
+                #img_line_color[:, last_textpos_store:textpos]
+                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".png", img_line_color)
+                cv2.imwrite(output + "/nmtg_" + ("%04d"%index_sub)+".png", img_nmtag)
                 index_sub += 1
                 last_textpos_store = textpos
 
@@ -230,7 +224,7 @@ while(video.isOpened()):
             status = 0    
 
     cv2.imshow("img_crop", img_crop)
-    cv2.imshow("img_sub", img_line_last)
+    cv2.imshow("img_sub", img_line_color)
     cv2.waitKey(1)
     last_textpos = textpos
 
