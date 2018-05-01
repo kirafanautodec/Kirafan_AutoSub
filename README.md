@@ -6,6 +6,9 @@ Here are some previews
 * English Subtitled:  https://youtu.be/Z8BytfESak0
 * Korean Subtitled:   https://youtu.be/_6IlXAgpsEs
 
+Here is a simple tutorial
+* https://www.youtube.com/watch?v=YVUm496x_K0
+
 ## How it works
 
 ### gensub.py
