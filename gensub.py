@@ -29,14 +29,24 @@ if (not os.path.isfile(options.input)):
     exit(-1)
     
 # output dir
-filepwd = options.input + '_autosub'
-print("Work directory: " + filepwd)
-output = filepwd + '/' + 'img'    
-os.makedirs(output, exist_ok=True)
+basename = os.path.basename(options.input)
+dirname = os.path.dirname(options.input)
+output_dir = dirname + '/' + 'autosub'
 
-# timestamp file
-timestampfn = filepwd + '/timestamp.txt'
-timestampfp = open(timestampfn, mode='w', encoding='utf-8')
+script_output = output_dir + '/' + basename + '.krfss'
+img_output_dir = output_dir + '/' + basename + '_img'
+print("Script output: " + script_output)
+print("Image output directory: " + img_output_dir)
+
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(img_output_dir, exist_ok=True)
+
+# timestamp array
+timestamp_data = []
+# nmtg_db (array of image)
+g_nmtg_img_db = []
+# raw_nmtg_index -> db_index
+nmtg_map = []
 
 # COLOR DEFINITION
 BLANK_COLOR_MAX = (250, 256, 256)
@@ -62,11 +72,32 @@ def is_blank_func(im0, im1):
                 return False
     return True
 
+# judge if two nmtg_img are same
+def is_same_name(img0, img1):
+    kernel = np.ones((3,3), np.uint8)
+    img0_dil_inv = cv2.bitwise_not(cv2.dilate(img0, kernel, iterations = 1))
+    img1_dil_inv = cv2.bitwise_not(cv2.dilate(img1, kernel, iterations = 1))
+    img_judge0 = cv2.bitwise_and(img0, img1_dil_inv)
+    img_judge1 = cv2.bitwise_and(img1, img0_dil_inv)
+    return 0 == np.sum(img_judge0) + np.sum(img_judge1)
+
+# get_index in nmtg db
+# if no same name in the db
+# then append
+def get_nmtg_index(img1):
+    for (i, img0) in enumerate(g_nmtg_img_db):
+        if is_same_name(img0, img1):
+            return i
+    g_nmtg_img_db.append(img1.copy())
+    i = len(g_nmtg_img_db) - 1
+    cv2.imwrite(img_output_dir + '/' + "/nmtg_" + ("%04d"%i)+".png", img1)
+    return i
+
 # POSITION DEFINITION
 ROI = (slice(520, 740), slice(80, 1180))
 ROI_JUDGE0 = (slice(78, 80), slice(130, 1000))
 ROI_JUDGE1 = (slice(183, 185), slice(130, 1000))
-ROI_NMTAG = (slice(10, 50), slice(5, 405))
+ROI_NMTG = (slice(10, 50), slice(5, 405))
 LINE_START = 165
 LINE_LENGTH = 835
 LINE_HEIGHT = 40
@@ -100,6 +131,7 @@ index_sub = 0
 # blank in last frame
 is_blank_last = -1
 
+
 while(video.isOpened()):
     ret, img = video.read()
     if not ret:
@@ -122,7 +154,7 @@ while(video.isOpened()):
     retval, img_bin = cv2.threshold(img_gray, int(options.gray_threshold), 255, cv2.THRESH_BINARY)
 
     # Invert NameTag Area
-    img_nmtag = cv2.bitwise_not(img_bin[ROI_NMTAG])
+    img_nmtg = cv2.bitwise_not(img_bin[ROI_NMTG])
     # The fisrt line of TextArea
     img_line0 = img_bin[ROI_LINE0]
     # The second line of TextArea
@@ -160,10 +192,10 @@ while(video.isOpened()):
     if (not is_blank_last == int(is_blank)):
         if (is_blank):
             print ("TextArea In", frame)
-            timestampfp.write(str(frame) + " T\n")
+            timestamp_data.append({"at": frame, "action": "T"})
         else:
             print ("TextArea Out", frame)
-            timestampfp.write(str(frame) + " X\n")
+            timestamp_data.append({"at": frame, "action": "X"})
         is_blank_last = int(is_blank)
     
     # NO TEXT, waiting for a new line
@@ -171,7 +203,7 @@ while(video.isOpened()):
         # Start of a Line
         if (textpos > 0):
             print ("LN", frame)
-            timestampfp.write(str(frame) + " L\n")
+            timestamp_data.append({"at": frame, "action": "L"})
             # Status -> 1
             status = 1
             # mark frame change
@@ -179,7 +211,7 @@ while(video.isOpened()):
             last_textpos_store = 0
             if (storing == 0):
                 print("Start", frame)
-                timestampfp.write(str(frame) + " S " + str(index_sub) + "\n")
+                timestamp_data.append({"at": frame, "action": "S", "sub": index_sub})
                 storing = 1
 
     # Monitoring change of textarea
@@ -189,7 +221,7 @@ while(video.isOpened()):
             last_change = frame
             if (storing == 0):
                 print("Start", frame)
-                timestampfp.write(str(frame) + " S " + str(index_sub) + "\n")
+                timestamp_data.append({"at": frame, "action": "S", "sub": index_sub})
                 storing = 1
         # Keep
         if (is_textpos_changed == 0):
@@ -197,9 +229,9 @@ while(video.isOpened()):
             if (frame - last_change > int(options.wait_frame_threshold) and not last_textpos_store == textpos):
                 frame_real = frame - int(options.wait_frame_threshold)
                 print ("End", frame_real)
-                timestampfp.write(str(frame_real) + " E " + str(index_sub) + "\n")
+                timestamp_data.append({"at": frame_real, "action": "E", "sub": index_sub})
                 storing = 0
-                #img_line_last = img_line[:, last_textpos_store:textpos]
+                # Store TextArea
                 img_line0_color_c = img_line0_color.copy()
                 img_line1_color_c = img_line1_color.copy()
                 cv2.line(img_line0_color_c, \
@@ -211,16 +243,21 @@ while(video.isOpened()):
                 img_line_color_o = np.concatenate((img_line0_color, img_line1_color), axis=0)
                 img_line_color_c = np.concatenate((img_line0_color_c, img_line1_color_c), axis=0)
                 img_line_color = cv2.addWeighted(img_line_color_o, 0.85, img_line_color_c, 0.15, 1)
-                #img_line_color[:, last_textpos_store:textpos]
-                cv2.imwrite(output + "/text_" + ("%04d"%index_sub)+".png", img_line_color)
-                cv2.imwrite(output + "/nmtg_" + ("%04d"%index_sub)+".png", img_nmtag)
+                cv2.imwrite(img_output_dir + '/' + "text_" + ("%04d"%index_sub)+".png", img_line_color)
+                print ("index_sub: " + str(index_sub))
+                
+                # Store NameTag
+                nmtg_index = get_nmtg_index(img_nmtg)
+                nmtg_map.append(nmtg_index)
+                print ("nmtg_index: " + str(nmtg_index))
+                
                 index_sub += 1
                 last_textpos_store = textpos
 
         # Carriage return
         if (is_textpos_changed < 0):
             print("CR", frame)
-            timestampfp.write(str(frame) + " C\n")
+            timestamp_data.append({"at": frame, "action": "C"})
             status = 0    
 
     cv2.imshow("img_crop", img_crop)
@@ -229,5 +266,22 @@ while(video.isOpened()):
     last_textpos = textpos
 
 print ("All End", frame)
-timestampfp.write(str(frame) + " O\n")
 video.release()
+timestamp_data.append({"at": frame, "action": "O"})
+
+# Write to json file
+import json
+script_fp = open(script_output, mode='w', encoding='utf-8')
+json_nmtgs = [''] * len(g_nmtg_img_db)
+json_trans = [''] * len(nmtg_map)
+json_data = {
+    "video": basename,
+    "total": len(nmtg_map),
+    "lang": '',
+    "nmtgs": json_nmtgs,
+    "trans": json_trans,
+    "nmtg_map": nmtg_map,
+    "timestamp": timestamp_data
+}
+json_text = json.dumps(json_data, indent=2)
+script_fp.write(json_text)
