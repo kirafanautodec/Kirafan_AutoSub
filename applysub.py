@@ -48,7 +48,7 @@ if (not os.path.isfile(options.input)):
 # output dir
 basename = os.path.basename(options.input)
 dirname = os.path.dirname(options.input)
-script_dir = dirname + '/' + 'autosub'
+script_dir = dirname + ('/' if dirname else '') + 'autosub'
 
 script_fn = script_dir + '/' + basename + '.krfss'
 print("Script file: " + script_fn)
