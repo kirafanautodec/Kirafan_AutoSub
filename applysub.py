@@ -45,69 +45,65 @@ if (not os.path.isfile(options.input)):
     print("Can not open video file " + option.input)
     exit(-1)
     
-# input dir
-filepwd = os.path.dirname(os.path.abspath(options.input))
-print("Video directory: " + filepwd)
-subpwd = options.input + '_autosub'
-print("Subtitel directory: " + subpwd)
-    
+# output dir
+basename = os.path.basename(options.input)
+dirname = os.path.dirname(options.input)
+script_dir = dirname + '/' + 'autosub'
+
+script_fn = script_dir + '/' + basename + '.krfss'
+print("Script file: " + script_fn)
+if (not os.path.isfile(script_fn)):
+    print("Can not open video file " + script_fn)
+    exit(-1)
+
 frame_cmds = {}
 frame_subindex = {}
 frame_haveblank = {}
 frame_havenmtg = {}
 frame_index_temp = 0
 frame_index_temp1 = 0
-# read timestampfile
-timestampfn = subpwd + '/' + 'timestamp.txt'
-with open(timestampfn, mode='r', encoding='utf-8') as fp:
-    text = fp.read()
-    if (text[0].encode('utf-8') == codecs.BOM_UTF8):
-        text = text[1:]
-    for line in text.split('\n'):
-        cmds = line.split(' ')
-        if (len(cmds) < 2):
-            break
-        frame = int(cmds[0])
-        action = cmds[1]
-        if (action == 'S' or action == 'E' or action == 'C'):
-            frame_cmds[frame] = action
-        if (action == 'S'):
-            subindex = int(cmds[2])
-            frame_subindex[frame] = subindex
-        if (action == 'T'):
-            for i in range(frame_index_temp, frame - int(options.blank_pre)):
-                frame_haveblank[i] = False
-            frame_index_temp = frame - int(options.blank_pre)
-            for i in range(frame_index_temp1, frame - int(options.nmtg_pre)):
-                frame_havenmtg[i] = False
-            frame_index_temp1 = frame - int(options.nmtg_pre)
-        if (action == 'X'):
-            for i in range(frame_index_temp, frame + int(options.blank_sub)):
-                frame_haveblank[i] = True
-            frame_index_temp = frame + int(options.blank_sub)
-            for i in range(frame_index_temp1, frame):
-                frame_havenmtg[i] = True
-            frame_index_temp1 = frame
-        if (action == 'O'):
-            for i in range(frame_index_temp, frame + 1):
-                frame_haveblank[i] = False
-            frame_index_temp = frame
-            for i in range(frame_index_temp1, frame + 1):
-                frame_havenmtg[i] = False
-            frame_index_temp1 = frame
 
-# read translation
+# read script
 import json
-subtitlefn = subpwd + '/' + os.path.basename(options.input) + '_subtitle.txt'
-with open(subtitlefn, mode='r', encoding='utf-8') as fp:
+with open(script_fn, mode='r', encoding='utf-8') as fp:
     text = fp.read()
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
         text = text[1:]
-    text = text[9:-1]
-    subjson = json.loads(text)
+    script = json.loads(text)
+    
 
-print (subjson["trans"])
-print (subjson["nmtgs"])
+for command in script["timestamp"]:
+    frame = int(command["at"])
+    action = command["action"]
+    if (action == 'S' or action == 'E' or action == 'C'):
+        frame_cmds[frame] = action
+    if (action == 'S'):
+        subindex = int(command["sub"])
+        frame_subindex[frame] = subindex
+    if (action == 'T'):
+        for i in range(frame_index_temp, frame - int(options.blank_pre)):
+            frame_haveblank[i] = False
+        frame_index_temp = frame - int(options.blank_pre)
+        for i in range(frame_index_temp1, frame - int(options.nmtg_pre)):
+            frame_havenmtg[i] = False
+        frame_index_temp1 = frame - int(options.nmtg_pre)
+    if (action == 'X'):
+        for i in range(frame_index_temp, frame + int(options.blank_sub)):
+            frame_haveblank[i] = True
+        frame_index_temp = frame + int(options.blank_sub)
+        for i in range(frame_index_temp1, frame):
+            frame_havenmtg[i] = True
+        frame_index_temp1 = frame
+    if (action == 'O'):
+        for i in range(frame_index_temp, frame + 1):
+            frame_haveblank[i] = False
+        frame_index_temp = frame
+        for i in range(frame_index_temp1, frame + 1):
+            frame_havenmtg[i] = False
+        frame_index_temp1 = frame
+
+print (script["trans"])
+print (script["nmtgs"])
 
 video_name = options.input
 video = cv2.VideoCapture(video_name)
@@ -116,7 +112,7 @@ fps = video.get(cv2.CAP_PROP_FPS)
 width = video.get(cv2.CAP_PROP_FRAME_HEIGHT)
 height = video.get(cv2.CAP_PROP_FRAME_WIDTH)
 # temp output without audio track
-out_name = filepwd + '/' + 'out.m4v'
+out_name = options.input + '_out.m4v'
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
 out_video = cv2.VideoWriter(out_name, int(fourcc), fps, (int(width), int(height)))
 
@@ -151,7 +147,7 @@ while(video.isOpened()):
         if (cmd == 'S'):
             last_typed_start = frame
             index_sub = frame_subindex[frame]
-            str_typed_cache = subjson["trans"][index_sub].replace('\\n', '\n')
+            str_typed_cache = script["trans"][index_sub].replace('\\n', '\n').replace('\\"', '"')
             print(frame, "S")
             print(str_typed_cache)
         if (cmd == 'E'):
@@ -182,7 +178,7 @@ while(video.isOpened()):
     else:
         img_inpaint = img_crop
 
-    nmtg = subjson["nmtgs"][index_sub]
+    nmtg = script["nmtgs"][script["nmtg_map"][index_sub]]
     if (is_nmtg and len(nmtg)):
         img_inpaint[5:55, 5:405] = img_nmtg_blank
         
