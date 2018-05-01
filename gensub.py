@@ -31,7 +31,7 @@ if (not os.path.isfile(options.input)):
 # output dir
 basename = os.path.basename(options.input)
 dirname = os.path.dirname(options.input)
-output_dir = dirname + '/' + 'autosub'
+output_dir = dirname + ('/' if dirname else '') + 'autosub'
 
 script_output = output_dir + '/' + basename + '.krfss'
 img_output_dir = output_dir + '/' + basename + '_img'
