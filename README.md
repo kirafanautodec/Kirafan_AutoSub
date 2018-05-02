@@ -66,4 +66,4 @@ Apply the translated subtitle to the original video, it depends on
   - The output video will be videoname_out.m4v
 
 ### The web-based editing tool
-  Preparing.
+  refer https://github.com/kirafanautodec/Krfss_Editor
