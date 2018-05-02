@@ -33,6 +33,15 @@ basename = os.path.basename(options.input)
 dirname = os.path.dirname(options.input)
 output_dir = dirname + ('/' if dirname else '') + 'autosub'
 
+# re encode 
+reencode_video_name = options.input + '_reencode.mp4'
+print("Re encode to CFR Video file: " + options.input)
+ffcmd = "ffmpeg -hide_banner -y -i " + options.input + " -c:v mpeg4 -b:v 24000k -r 30 -s 1280x720 -acodec aac -strict -2 -ac 2 -ab 256k -ar 44100 -f mp4 " + reencode_video_name
+" aac -strict -2 -ac 2 -ab 256k -ar 44100 -f "
+print ("Invoking: " + ffcmd)
+subprocess.call(ffcmd, shell=True)
+print ("Reencoding Finished")
+
 script_output = output_dir + '/' + basename + '.krfss'
 img_output_dir = output_dir + '/' + basename + '_img'
 print("Script output: " + script_output)
@@ -94,18 +103,20 @@ def get_nmtg_index(img1):
     return i
 
 # POSITION DEFINITION
-ROI = (slice(520, 740), slice(80, 1180))
-ROI_JUDGE0 = (slice(78, 80), slice(130, 1000))
-ROI_JUDGE1 = (slice(183, 185), slice(130, 1000))
-ROI_NMTG = (slice(10, 50), slice(5, 405))
-LINE_START = 165
-LINE_LENGTH = 835
-LINE_HEIGHT = 40
-ROI_LINE0 = (slice(88, 88 + LINE_HEIGHT), slice(LINE_START, LINE_START + LINE_LENGTH))
-ROI_LINE1 = (slice(143, 143 + LINE_HEIGHT), slice(LINE_START, LINE_START + LINE_LENGTH))
+ROI = (slice(500, 710), slice(70, 1140))
+ROI_JUDGE0 = (slice(70, 72), slice(130, 1000))
+ROI_JUDGE1 = (slice(178, 180), slice(130, 1000))
+ROI_NMTG = (slice(7, 50), slice(15, 395))
+LINE_START = 169
+LINE_LENGTH = 800
+LINE_HEIGHT = 36
+ROI_LINE0_Y = 84
+ROI_LINE1_Y = 136
+ROI_LINE0 = (slice(ROI_LINE0_Y, ROI_LINE0_Y + LINE_HEIGHT), slice(LINE_START, LINE_START + LINE_LENGTH))
+ROI_LINE1 = (slice(ROI_LINE1_Y, ROI_LINE1_Y + LINE_HEIGHT), slice(LINE_START, LINE_START + LINE_LENGTH))
 
 # input video
-video_name = options.input
+video_name = reencode_video_name
 video = cv2.VideoCapture(video_name)
 fps = video.get(cv2.CAP_PROP_FPS)
 frame = 0
@@ -140,7 +151,10 @@ while(video.isOpened()):
     frame += 1
 
     # Iphone's video is rotated
-    img_rot = np.rot90(img)
+    if (video.get(cv2.CAP_PROP_FRAME_HEIGHT) > video.get(cv2.CAP_PROP_FRAME_WIDTH)):
+        img_rot = np.rot90(img)
+    else:
+        img_rot = img
     # ROI of TextArea and NameTag
     img_crop = img_rot[ROI]
     # Judge ROI of TextArea
