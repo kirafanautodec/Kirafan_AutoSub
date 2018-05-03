@@ -254,7 +254,7 @@ while(video.isOpened()):
         # Keep
         if (is_textpos_changed == 0):
             # wait <wait_frame_threshold> and then store.
-            if (frame - last_change > int(options.wait_frame_threshold) and not last_textpos_store == textpos):
+            if (frame - last_change > int(options.wait_frame_threshold) and abs(last_textpos_store - textpos) > int(options.textpos_threshold)):
                 frame_real = frame - int(options.wait_frame_threshold)
                 print ("End", frame_real)
                 timestamp_data.append({"at": frame_real, "action": "E", "sub": index_sub})
