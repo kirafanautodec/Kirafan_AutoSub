@@ -17,7 +17,7 @@ Here is a simple tutorial (it it for version below Kirafan_AutoSub ver3.0)
 ### Dependence 
   Install these dependence below
   - python (version 3)
-  - python librarys
+  - python libraries
     - pillow
     - numpy
     - opencv-python
