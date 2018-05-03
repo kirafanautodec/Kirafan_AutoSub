@@ -14,7 +14,7 @@ Here is a simple tutorial (it it for version below Kirafan_AutoSub ver3.0)
 * https://www.youtube.com/watch?v=YVUm496x_K0
 
 ## Build
-### on Windows
+### on Windows (and you do not want to install python)
   Use pre-built binaries:
   - analyse_video.exe:    https://drive.google.com/open?id=1Zhec8rAaMLsWQNuVjrBHpF2NLKHUDUx2
   - patch_subtitle.exe:   https://drive.google.com/open?id=1eBjmstyS_kd7qo9FDL8QxsKQoAAMW1r4
