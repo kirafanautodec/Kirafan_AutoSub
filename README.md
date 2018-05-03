@@ -16,11 +16,14 @@ Here is a simple tutorial (it it for version below Kirafan_AutoSub ver3.0)
 ## How to use it
 ### Dependence 
   Install these dependence below
-  - python
-    - Pillow
+  - python (version 3)
+  - python librarys
+    - pillow
     - numpy
-    - opencv2
-  - ffmpeg (if you want to generate with audio track)
+    - opencv-python
+  - ffmpeg
+  
+  and make sure to include their directory in $PATH
 ### Usage
   - Record a Kirara Fantasia Story video
   - Copy the video to an empty folder
