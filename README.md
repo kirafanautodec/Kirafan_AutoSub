@@ -18,7 +18,7 @@ Here is a simple tutorial
   Use pre-built binaries:
   - analyse_video.exe:    https://drive.google.com/open?id=1Zhec8rAaMLsWQNuVjrBHpF2NLKHUDUx2
   - patch_subtitle.exe:   https://drive.google.com/open?id=1eBjmstyS_kd7qo9FDL8QxsKQoAAMW1r4
-  
+  - all the file(analyse_video.exe v5.0.0 + patch_subtitle.exe v5.0.0 + Krfss_Editor v3.0.1): https://drive.google.com/open?id=1uuZojwzCLgPr2PZn8OrjQnHPkNXvgSgT
 ### on Linux or Mac, (or you want to use it in terminal even on Window)
 #### Dependence 
   Install these dependence below
