@@ -63,7 +63,7 @@ Then, Analyse the original subtitle of Kirara Fantasia story
   - Detect change the TextArea and NameTag
     - Analyse the same name of nmtg_%d.png, and bind them as the same string
   - Generate a timestamp of
-    - TextArea fade-in, fade-out
+    - TextArea fade-in, fade-out
     - Newline of subtitle
     - Carriage return
     - Inline Pause
