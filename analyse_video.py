@@ -2,8 +2,20 @@
 import numpy as np
 import cv2
 import subprocess
-import os
+import os, sys
 import optparse
+
+try:
+    sys.setdefaultencoding('utf-8')
+except:
+    pass
+
+python_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+currPath = sys.path[0]  
+highPath = os.path.split(currPath)[0]
+env = os.environ.copy()
+spliter = ';' if os.name == 'nt' else ':'
+env["PATH"] = python_dir + spliter + highPath + spliter + env["PATH"]
 
 # Parse options
 parser = optparse.OptionParser()
@@ -21,26 +33,28 @@ parser.add_option('--wait_frame_threshold',
     help="text pause detection threshold in frame", default=2)
 
 options, args = parser.parse_args()
-if (not options.input):
-    print("Missing argument for option 'i'.")
+if (not len(args)):
+    print("Missing input video.")
     exit(-1)
-if (not os.path.isfile(options.input)):
-    print("Can not open video file " + options.input)
+inputvideo = os.path.abspath(args[0])
+if (not os.path.isfile(inputvideo)):
+    print("Can not open video file " + inputvideo)
     exit(-1)
     
 # output dir
-basename = os.path.basename(options.input)
-dirname = os.path.dirname(options.input)
+print("Inputvideo: " + inputvideo)
+basename = os.path.basename(inputvideo)
+dirname = os.path.dirname(inputvideo)
 output_dir = dirname + ('/' if dirname else '') + 'autosub'
 
 # re encode 
-reencode_video_name = options.input + '_reencode.mp4'
-print("Re encode to CFR Video file: " + options.input)
-ffcmd = "ffmpeg -hide_banner -y -i " + options.input + " -c:v mpeg4 -b:v 24000k -r 30 -s 1280x720 -acodec aac -strict -2 -ac 2 -ab 256k -ar 44100 -f mp4 " + reencode_video_name
+reencode_video_name = inputvideo + '_reencode.mp4'
+print("Re encode to CFR Video file: " + inputvideo)
+ffcmd = "ffmpeg -hide_banner -y -i " + inputvideo + " -c:v mpeg4 -b:v 24000k -r 30 -s 1280x720 -acodec aac -strict -2 -ac 2 -ab 256k -ar 44100 -f mp4 " + reencode_video_name
 " aac -strict -2 -ac 2 -ab 256k -ar 44100 -f "
 print ("Invoking: " + ffcmd)
-subprocess.call(ffcmd, shell=True)
-print ("Reencoding Finished")
+subprocess.call(ffcmd, shell=True, env=env)
+print ("Re-encoding Finished")
 
 script_output = output_dir + '/' + basename + '.krfss'
 img_output_dir = output_dir + '/' + basename + '_img'

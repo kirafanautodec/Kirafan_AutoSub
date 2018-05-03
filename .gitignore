@@ -5,3 +5,6 @@
 *.m4v
 *.mp4
 *.aac
+__pycache__/
+build/
+dist/

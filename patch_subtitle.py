@@ -1,15 +1,35 @@
 # -*- coding: utf-8 -*-
-import os
-import optparse
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import cv2
 import codecs
 import subprocess
+import os, sys
+import optparse
 
-python_dir = os.path.dirname(os.path.abspath(__file__))
-fontf = python_dir + "/usr/font.ttf"
+try:
+    sys.setdefaultencoding('utf-8')
+except:
+    pass
+
+python_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+currPath = sys.path[0]  
+highPath = os.path.split(currPath)[0]
+env = os.environ.copy()
+spliter = ';' if os.name == 'nt' else ':'
+env["PATH"] = python_dir + spliter + highPath + spliter + env["PATH"]
+
+fontf = python_dir + "/font.ttf"
+if (not os.path.isfile(fontf)):
+    fontf = python_dir + "/usr/font.ttf"
+if (not os.path.isfile(fontf)):
+    fontf = highPath + "/usr/font.ttf"
+if (not os.path.isfile(fontf)):
+    exit(1)
+    print("Can not find font.ttf")
 nmtg_blank_f = python_dir + "/usr/nmtg.png"
+if (not os.path.isfile(nmtg_blank_f)):
+    nmtg_blank_f = highPath + "/usr/nmtg.png"
 
 parser = optparse.OptionParser()
 parser.add_option('-i', '--input',
@@ -50,18 +70,21 @@ parser.add_option('--overlap',
     help="overlap text on japanese, for debugging")
 
 options, args = parser.parse_args()
-if (not options.input):
-    print("Missing argument for option 'i'.")
+if (not len(args)):
+    print("Missing input video.")
     exit(-1)
-if (not os.path.isfile(options.input)):
-    print("Can not open video file " + option.input)
+inputvideo = os.path.abspath(args[0])
+if (not os.path.isfile(inputvideo)):
+    print("Can not open video file " + inputvideo)
     exit(-1)
     
 # output dir
-basename = os.path.basename(options.input)
-dirname = os.path.dirname(options.input)
-reencode_video_name = options.input + '_reencode.mp4'
-if (not os.path.isfile(options.input)):
+if (inputvideo[-13:] == '_reencode.mp4'):
+    inputvideo = inputvideo[:-13]
+basename = os.path.basename(inputvideo)
+dirname = os.path.dirname(inputvideo)
+reencode_video_name = inputvideo + '_reencode.mp4'
+if (not os.path.isfile(inputvideo)):
     print("Can not open re_encoded video file " + reencode_video_name)
     exit(-1)
     
@@ -148,7 +171,7 @@ fps = video.get(cv2.CAP_PROP_FPS)
 width = max(video.get(cv2.CAP_PROP_FRAME_HEIGHT), video.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = min(video.get(cv2.CAP_PROP_FRAME_HEIGHT), video.get(cv2.CAP_PROP_FRAME_WIDTH))
 # temp output without audio track
-out_name = options.input + '_temp_out.m4v'
+out_name = inputvideo + '_temp_out.m4v'
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
 out_video = cv2.VideoWriter(out_name, int(fourcc), fps, (int(width), int(height)))
 
@@ -264,7 +287,7 @@ out_video.release()
 
 ffcmd = "ffmpeg -y -vn -i " + reencode_video_name + " -acodec copy " + reencode_video_name + ".aac"
 print (ffcmd)
-subprocess.call(ffcmd, shell=True)
-ffcmd = "ffmpeg -y -i " + out_name + " -i " + reencode_video_name + ".aac -vcodec " + options.ffmpeg_encoder + " -preset slow -profile:v high -level:v 4.1 -pix_fmt yuv420p -b:v " + options.bitrate+ " -r 30 -acodec aac -strict -2 -ac 2 -ab " + options.audio_bitrate + " -ar 44100 -f flv " + options.input + ".autosubed.flv"
+subprocess.call(ffcmd, shell=True, env=env)
+ffcmd = "ffmpeg -y -i " + out_name + " -i " + reencode_video_name + ".aac -vcodec " + options.ffmpeg_encoder + " -preset slow -profile:v high -level:v 4.1 -pix_fmt yuv420p -b:v " + options.bitrate+ " -r 30 -acodec aac -strict -2 -ac 2 -ab " + options.audio_bitrate + " -ar 44100 -f flv " + inputvideo + ".autosubed.flv"
 print (ffcmd)
-subprocess.call(ffcmd, shell=True)
+subprocess.call(ffcmd, shell=True, env=env)
