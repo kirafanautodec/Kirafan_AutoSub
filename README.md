@@ -37,7 +37,7 @@ Here is a simple tutorial
   - Copy the video to an empty folder
   - Run analyse_video
     - on \*Nix, Run the commands below, replace &lt;videoname&gt; by your actual video name
-    > python analyse_video.py -i &lt;videoname&gt;
+    > python analyse_video.py &lt;videoname&gt;
     - on Windows, drag video file into analyse_video.exe
   
   - Edit the generated autosub/&lt;videoname&gt.krfss file by
@@ -60,7 +60,7 @@ Here is a simple tutorial
     - on Windows, put a font.ttf in the same directory of patch_subtitle.exe
   - Run patch_subtitle
     - on, \*nix, Run the commands below, replace &lt;videoname&gt; by your actual video name
-    > python patch_subtitle.py -i &lt;videoname&gt;
+    > python patch_subtitle.py &lt;videoname&gt;
     - on Windows, drag video file into patch_subtitle.exe
   
   - The output video will be &lt;videoname&gt;_autosubed.flv
