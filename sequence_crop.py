@@ -24,7 +24,7 @@ parser.add_option('--start_num',
                   help="start num of sub index", default=1)
 parser.add_option('--threshold',
                   action="store", dest="threshold",
-                  help="color_threshold of detection", default=3)
+                  help="color_threshold of detection", default=6)
 parser.add_option('--pre_cut',
                   action="store", dest="pre_cut",
                   help="number of frames which will be cut after the starting position of every clip", default=8)
@@ -51,11 +51,10 @@ dirname = os.path.dirname(inputvideo)
 output_dir = dirname + ('/' if dirname else '') + basename + '_seq_video/'
 
 # re encode
-reencode_video_name = inputvideo + '_reencode.mp4'
+reencode_video_name = inputvideo + '_tmp_thumbnail.mp4'
 print("Re encode to CFR Video file: " + inputvideo)
-ffcmd = "ffmpeg -hide_banner -y -i " + inputvideo + \
-    " -c:v mpeg4 -b:v 24000k -r 30 -s 1280x720 -acodec aac -strict -2 -ac 2 -ab 256k -ar 44100 -f mp4 " + reencode_video_name
-" aac -strict -2 -ac 2 -ab 256k -ar 44100 -f "
+ffcmd = "ffmpeg -hide_banner -loglevel error -stats -y -i " + inputvideo + \
+    " -c:v h264 -preset ultrafast -r 30 -s 128x72 -an -f mp4 " + reencode_video_name
 print("Invoking: " + ffcmd)
 subprocess.call(ffcmd, shell=True, env=env)
 print("Re-encoding Finished")
@@ -87,7 +86,7 @@ def is_cut(color, stddev):
 
 TIME_REPORT_INT = int(options.report)
 FFMPEG_PARA = \
-    ' -y -hide_banner -loglevel info ' + \
+    ' -y -hide_banner -loglevel error -stats ' + \
     '  -c:v mpeg4 -b:v 24000k -r 30 -s 1280x720 -acodec aac -strict -2 -ac 2 -ab 256k -ar 44100 -f mp4 '
 
 video = cv2.VideoCapture(reencode_video_name)
@@ -113,12 +112,8 @@ while(video.isOpened()):
     ret, rawImg = video.read()
     if not ret:
         break
-    img = rawImg[0:520, :]
+    img = rawImg[0:52, :]
     time = frame / fps
-
-   # if (time < 125):
-    #    frame += 1
-    #   continue
 
     if (time >= nxt_report):
         if (status == 2):
@@ -164,8 +159,8 @@ for clip in clip_list:
     print("PROCESSING", video_index, ss, t)
     print("-----------------------------------")
     os.makedirs(output_dir, exist_ok=True)
-    cmd = "ffmpeg -i " + reencode_video_name + FFMPEG_PARA + " -ss " + \
-        str(ss) + " -t " + str(t) + " " + \
+    cmd = "ffmpeg -ss " + str(ss) + " -t " + str(t) + " " + \
+        ' -i ' + inputvideo + FFMPEG_PARA + \
         output_dir + ("%04d" % video_index) + ".mp4"
     print(cmd)
     subprocess.call(cmd, shell=True)

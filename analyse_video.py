@@ -59,16 +59,6 @@ basename = os.path.basename(inputvideo)
 dirname = os.path.dirname(inputvideo)
 output_dir = dirname + ('/' if dirname else '') + 'autosub'
 
-# re encode
-reencode_video_name = inputvideo + '_reencode.mp4'
-print("Re encode to CFR Video file: " + inputvideo)
-ffcmd = "ffmpeg -hide_banner -y -i " + inputvideo + \
-    " -c:v mpeg4 -b:v 24000k -r 30 -s 1280x720 -acodec aac -strict -2 -ac 2 -ab 256k -ar 44100 -f mp4 " + reencode_video_name
-" aac -strict -2 -ac 2 -ab 256k -ar 44100 -f "
-print("Invoking: " + ffcmd)
-subprocess.call(ffcmd, shell=True, env=env)
-print("Re-encoding Finished")
-
 script_output = output_dir + '/' + basename + '.krfss'
 img_output_dir = output_dir + '/' + basename + '_img'
 print("Script output: " + script_output)
@@ -154,7 +144,7 @@ ROI_LINE1 = (slice(ROI_LINE1_Y, ROI_LINE1_Y + LINE_HEIGHT),
              slice(LINE_START, LINE_START + LINE_LENGTH))
 
 # input video
-video_name = reencode_video_name
+video_name = inputvideo
 video = cv2.VideoCapture(video_name)
 fps = video.get(cv2.CAP_PROP_FPS)
 frame = 0
