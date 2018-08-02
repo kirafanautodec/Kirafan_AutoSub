@@ -215,9 +215,6 @@ while(video.isOpened()):
     time = frame / fps
     frame += 1
 
-    # if (2 < frame < 2200):
-    #    continue
-
     # Iphone's video is rotated
     if (video.get(cv2.CAP_PROP_FRAME_HEIGHT) > video.get(cv2.CAP_PROP_FRAME_WIDTH)):
         img_rot = np.rot90(img)
