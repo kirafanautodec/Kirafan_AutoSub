@@ -25,6 +25,13 @@ if (not os.path.isfile(pattern0_f)):
     print("Can not load nmtg pattern0" + pattern0_f)
 img_pattern0 = cv2.imread(pattern0_f)
 
+pattern1_f = python_dir + "/usr/pattern1.png"
+if (not os.path.isfile(pattern1_f)):
+    pattern1_f = highPath + "/usr/pattern1.png"
+if (not os.path.isfile(pattern1_f)):
+    print("Can not load nmtg pattern1" + pattern1_f)
+img_pattern1 = cv2.imread(pattern1_f)
+
 # Parse options
 parser = optparse.OptionParser()
 parser.add_option('-i', '--input',
@@ -42,6 +49,9 @@ parser.add_option('--wait_frame_threshold',
 parser.add_option('--nmtg_tm_threshold',
                   action="store", dest="nmtg_tm_threshold",
                   help="nmtg box template matching threshold", default=0.12)
+parser.add_option('--nmtg_extra_length_threshold',
+                  action="store", dest="nmtg_extra_length_threshold",
+                  help="nmtg box template extra_length threshold", default=4)
 
 
 options, args = parser.parse_args()
@@ -66,6 +76,25 @@ print("Image output directory: " + img_output_dir)
 
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(img_output_dir, exist_ok=True)
+
+# Ask Language
+currentlang = "cn"
+lang_config_f = currPath + '/lang.config'
+if (os.path.isfile(lang_config_f)):
+    with open(lang_config_f, mode='r', encoding='utf-8') as fp:
+        currentlang = fp.read()
+    print("lang.config exists using " + currentlang + " as target language")
+else:
+    print("PLEASE SPECIFY YOUR TARGET LANGUAGE!")
+    print("FROM THE FOLLOWING LIST")
+    print("For Chinese,  input cn")
+    print("For English,  input en")
+    print("For Korean,   input ko")
+    print("For Japanese, input jp")
+    print("For Others,   keep empty")
+    currentlang = input("input >")
+    with open(lang_config_f, mode='w', encoding='utf-8') as fp:
+        fp.write(currentlang)
 
 # timestamp array
 timestamp_data = []
@@ -105,6 +134,15 @@ def is_blank_func(im0, im1):
 
 
 def is_same_name(img0, img1):
+    (h, w0) = img0.shape
+    (h, w1) = img1.shape
+    if (abs(w1 - w0) > int(options.nmtg_extra_length_threshold)):
+        return False
+    if (not w1 == w0):
+        if (w1 > w0):
+            img1 = img1[:, 0:w0]
+        if (w1 < w0):
+            img0 = img0[:, 0:w1]
     kernel = np.ones((3, 3), np.uint8)
     img0_dil_inv = cv2.bitwise_not(cv2.dilate(img0, kernel, iterations=1))
     img1_dil_inv = cv2.bitwise_not(cv2.dilate(img1, kernel, iterations=1))
@@ -131,8 +169,7 @@ def get_nmtg_index(img1):
 ROI = (slice(500, 710), slice(70, 1140))
 ROI_JUDGE0 = (slice(70, 72), slice(130, 1000))
 ROI_JUDGE1 = (slice(178, 180), slice(130, 1000))
-ROI_NMTG = (slice(7, 50), slice(15, 395))
-ROI_NMTG_SEARCH = (slice(0, 210), slice(13, 13 + 382))
+ROI_NMTG_SEARCH = (slice(0, 140), slice(13, 13 + 382))
 LINE_START = 169
 LINE_LENGTH = 800
 LINE_HEIGHT = 36
@@ -178,6 +215,9 @@ while(video.isOpened()):
     time = frame / fps
     frame += 1
 
+    # if (2 < frame < 2200):
+    #    continue
+
     # Iphone's video is rotated
     if (video.get(cv2.CAP_PROP_FRAME_HEIGHT) > video.get(cv2.CAP_PROP_FRAME_WIDTH)):
         img_rot = np.rot90(img)
@@ -196,8 +236,6 @@ while(video.isOpened()):
     retval, img_bin = cv2.threshold(img_gray, int(
         options.gray_threshold), 255, cv2.THRESH_BINARY)
 
-    # Invert NameTag Area
-    img_nmtg = cv2.bitwise_not(img_bin[ROI_NMTG])
     # The fisrt line of TextArea
     img_line0 = img_bin[ROI_LINE0]
     # The second line of TextArea
@@ -216,16 +254,37 @@ while(video.isOpened()):
             (img_line0_color, img_line1_color), axis=0)
 
     # Template Matching for NMTG
-    (h, w, c) = img_pattern0.shape
+    img_nmtg_1_tomatch = img_crop[ROI_NMTG_SEARCH]
+    kernel = np.ones((7, 7), np.uint8)
+    img_nmtg_1_tomatch = cv2.erode(img_nmtg_1_tomatch, kernel)
+
     img_tm = cv2.matchTemplate(
-        img_crop[ROI_NMTG_SEARCH], img_pattern0, cv2.TM_SQDIFF_NORMED)
+        img_nmtg_1_tomatch, img_pattern0, cv2.TM_SQDIFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(img_tm)
+
+    nmtg_x = 0
     if (min_val < float(options.nmtg_tm_threshold)):
-        nmtg_y = min_loc[1]
-        if (min_loc[1] > 1):
-            print("Nmtg Transition", frame, nmtg_y)
+        nmtg_y = min_loc[1] - 2
+        if (nmtg_y < 0):
+            nmtg_y = 0
+        # Search NameTag Length
+        img_nmtg_2_tomatch = img_crop[nmtg_y:nmtg_y + 56, 390: 600]
+
+        img_tm_2 = cv2.matchTemplate(
+            img_nmtg_2_tomatch, img_pattern1, cv2.TM_SQDIFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(img_tm_2)
+        nmtg_x = min_loc[0]
+        if (nmtg_x < int(options.nmtg_extra_length_threshold)):
+            nmtg_x = 0
+
+        cv2.line(img_nmtg_2_tomatch, (nmtg_x, nmtg_y),
+                 (nmtg_x, nmtg_y + 56), (255, 255, 0), 3)
+
+        # Write Nmtg Y
+        if (nmtg_y > 1):
+            print("Nmtg Transition", frame, nmtg_y, nmtg_x)
             timestamp_data.append(
-                {"at": frame, "action": "N", "y": nmtg_y}
+                {"at": frame, "action": "N", "y": nmtg_y, "ex": nmtg_x}
             )
 
     # If TextArea does not exits
@@ -313,9 +372,13 @@ while(video.isOpened()):
                             ("%04d" % index_sub)+".png", img_line_color)
                 print("index_sub: " + str(index_sub))
 
+                # Get NameTag Area
+                ROI_NMTG = (slice(7, 50), slice(15, 390 + nmtg_x))
+                img_nmtg = cv2.bitwise_not(img_bin[ROI_NMTG])
+                cv2.imshow("img_nmtg", img_nmtg)
                 # Store NameTag
                 nmtg_index = get_nmtg_index(img_nmtg)
-                nmtg_map.append(nmtg_index)
+                nmtg_map.append((nmtg_index, nmtg_x))
                 print("nmtg_index: " + str(nmtg_index))
 
                 index_sub += 1
@@ -343,8 +406,9 @@ json_nmtgs = [''] * len(g_nmtg_img_db)
 json_trans = [''] * len(nmtg_map)
 json_data = {
     "video": basename,
+    "version": '7.0.0',
     "total": len(nmtg_map),
-    "lang": '',
+    "lang": currentlang,
     "nmtgs": json_nmtgs,
     "trans": json_trans,
     "nmtg_map": nmtg_map,

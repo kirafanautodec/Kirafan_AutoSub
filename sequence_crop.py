@@ -164,3 +164,9 @@ for clip in clip_list:
         output_dir + ("%04d" % video_index) + ".mp4"
     print(cmd)
     subprocess.call(cmd, shell=True)
+
+try:
+    os.remove(reencode_video_name)
+except:
+    pass
+print("-------------FINISHED--------------")
