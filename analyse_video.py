@@ -79,7 +79,7 @@ os.makedirs(img_output_dir, exist_ok=True)
 
 # Ask Language
 currentlang = "cn"
-lang_config_f = currPath + '/lang.config'
+lang_config_f = python_dir + '/lang.config'
 if (os.path.isfile(lang_config_f)):
     with open(lang_config_f, mode='r', encoding='utf-8') as fp:
         currentlang = fp.read()
@@ -100,6 +100,7 @@ else:
 timestamp_data = []
 # nmtg_db (array of image)
 g_nmtg_img_db = []
+g_nmtg_ex_db = []
 # raw_nmtg_index -> db_index
 nmtg_map = []
 
@@ -155,11 +156,12 @@ def is_same_name(img0, img1):
 # then append
 
 
-def get_nmtg_index(img1):
+def get_nmtg_index(img1, ex):
     for (i, img0) in enumerate(g_nmtg_img_db):
         if is_same_name(img0, img1):
             return i
     g_nmtg_img_db.append(img1.copy())
+    g_nmtg_ex_db.append(ex)
     i = len(g_nmtg_img_db) - 1
     cv2.imwrite(img_output_dir + '/' + "/nmtg_" + ("%04d" % i)+".png", img1)
     return i
@@ -374,8 +376,8 @@ while(video.isOpened()):
                 img_nmtg = cv2.bitwise_not(img_bin[ROI_NMTG])
                 cv2.imshow("img_nmtg", img_nmtg)
                 # Store NameTag
-                nmtg_index = get_nmtg_index(img_nmtg)
-                nmtg_map.append((nmtg_index, nmtg_x))
+                nmtg_index = get_nmtg_index(img_nmtg, nmtg_x)
+                nmtg_map.append(nmtg_index)
                 print("nmtg_index: " + str(nmtg_index))
 
                 index_sub += 1
@@ -409,6 +411,7 @@ json_data = {
     "nmtgs": json_nmtgs,
     "trans": json_trans,
     "nmtg_map": nmtg_map,
+    "nmtg_ex": g_nmtg_ex_db,
     "timestamp": timestamp_data
 }
 json_text = json.dumps(json_data, indent=2)

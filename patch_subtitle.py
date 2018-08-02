@@ -19,23 +19,29 @@ highPath = os.path.split(currPath)[0]
 env = os.environ.copy()
 spliter = ';' if os.name == 'nt' else ':'
 env["PATH"] = python_dir + spliter + highPath + spliter + env["PATH"]
-
-fontf = python_dir + "/font.ttf"
-if (not os.path.isfile(fontf)):
-    fontf = python_dir + "/usr/font.ttf"
-if (not os.path.isfile(fontf)):
-    fontf = highPath + "/usr/font.ttf"
-if (not os.path.isfile(fontf)):
+print("Missing input video.")
+# Load Font
+fontDir = python_dir
+jpfontf = python_dir + "/jpfont.ttf"
+if (not os.path.isfile(jpfontf)):
+    jpfontf = python_dir + "/usr/jpfont.ttf"
+    fontDir = python_dir + "/usr"
+if (not os.path.isfile(jpfontf)):
+    jpfontf = highPath + "/usr/jpfont.ttf"
+    fontDir = highPath + "/usr"
+if (not os.path.isfile(jpfontf)):
+    print("Can not find jpfont.ttf")
     exit(1)
-    print("Can not find font.ttf")
+
+# Load Nmtg Black
 nmtg_blank_f = python_dir + "/usr/nmtg.png"
 if (not os.path.isfile(nmtg_blank_f)):
     nmtg_blank_f = highPath + "/usr/nmtg.png"
+nmtg_blank_ex_f = python_dir + "/usr/nmtgex.png"
+if (not os.path.isfile(nmtg_blank_ex_f)):
+    nmtg_blank_ex_f = highPath + "/usr/nmtgex.png"
 
 parser = optparse.OptionParser()
-parser.add_option('-i', '--input',
-                  action="store", dest="input",
-                  help="input file of video file")
 parser.add_option('--gray_threshold',
                   action="store", dest="gray_threshold",
                   help="gray_threshold of binarization", default=160)
@@ -80,14 +86,8 @@ if (not os.path.isfile(inputvideo)):
     exit(-1)
 
 # output dir
-if (inputvideo[-13:] == '_reencode.mp4'):
-    inputvideo = inputvideo[:-13]
 basename = os.path.basename(inputvideo)
 dirname = os.path.dirname(inputvideo)
-reencode_video_name = inputvideo + '_reencode.mp4'
-if (not os.path.isfile(inputvideo)):
-    print("Can not open re_encoded video file " + reencode_video_name)
-    exit(-1)
 
 script_dir = dirname + ('/' if dirname else '') + 'autosub'
 script_fn = script_dir + '/' + basename + '.krfss'
@@ -111,6 +111,21 @@ with open(script_fn, mode='r', encoding='utf-8') as fp:
     if (text[0].encode('utf-8') == codecs.BOM_UTF8):
         text = text[1:]
     script = json.loads(text)
+
+# read language
+fontf = python_dir + "/font.ttf"
+if (os.path.isfile(fontf)):
+    pass
+elif script["lang"] == 'cn':
+    fontf = fontDir + '/cnfont.ttf'
+elif script["lang"] == 'jp':
+    fontf = fontDir + '/jpfont.ttf'
+elif script["lang"] == 'en':
+    fontf = fontDir + '/enfont.ttf'
+elif script["lang"] == 'ko':
+    fontf = fontDir + '/kofont.ttf'
+else:
+    fontf = fontDir + '/jpfont.ttf'
 
 for command in script["timestamp"]:
     frame = int(command["at"])
@@ -143,7 +158,8 @@ for command in script["timestamp"]:
         frame_index_temp1 = frame
     if (action == 'N'):
         nmtg_y = int(command["y"])
-        frame_nmtgtransition[frame] = nmtg_y
+        nmtg_x = int(command["ex"])
+        frame_nmtgtransition[frame] = (nmtg_y, nmtg_x)
 
 print(script["trans"])
 print(script["nmtgs"])
@@ -177,7 +193,7 @@ TEXT_COLOR = (60, 66, 111)
 BOLD_COLOR = (0x8e, 0x66, 0xea)
 NMTG_COLOR = (255, 255, 255)
 
-video = cv2.VideoCapture(reencode_video_name)
+video = cv2.VideoCapture(inputvideo)
 fps = video.get(cv2.CAP_PROP_FPS)
 # Iphone's video is rotated
 width = max(video.get(cv2.CAP_PROP_FRAME_HEIGHT),
@@ -201,6 +217,7 @@ font_w_text, font_h_text = draw_temp.textsize(
 font_w_nmtg, font_h_nmtg = draw_temp.textsize(
     "LIPFgYTjyXSq|^#%", font=font_nmtg)
 img_nmtg_blank = cv2.imread(nmtg_blank_f)
+img_nmtg_blank_ex = cv2.imread(nmtg_blank_ex_f)
 
 # static string
 str_todraw = ''
@@ -264,14 +281,24 @@ while(video.isOpened()):
     else:
         img_inpaint = img_crop
 
-    nmtg = script["nmtgs"][script["nmtg_map"][index_sub]]
+    nmtg_index = script["nmtg_map"][index_sub]
+    nmtg = script["nmtgs"][nmtg_index]
+    nmtg_x = script["nmtg_ex"][nmtg_index]
     if (is_nmtg and len(nmtg) and not options.overlap):
         img_inpaint[ROI_NMTG] = img_nmtg_blank
+        for nmtg_ex_i in range(nmtg_x):
+            ROI_TEMP = (slice(ROI_NMTG_Y0, 50),
+                        slice(395 + nmtg_ex_i, 395 + nmtg_ex_i + 1))
+            img_inpaint[ROI_TEMP] = img_nmtg_blank_ex
 
     if (frame in frame_nmtgtransition):
-        nmtg_y = frame_nmtgtransition[frame]
+        nmtg_y, nmtg_x = frame_nmtgtransition[frame]
         img_inpaint[(slice(ROI_NMTG_Y0 + nmtg_y, 50 + nmtg_y),
                      slice(ROI_NMTG_X0, 395))] = img_nmtg_blank
+        for nmtg_ex_i in range(nmtg_x):
+            ROI_TEMP = (slice(ROI_NMTG_Y0 + nmtg_y, 50 + nmtg_y),
+                        slice(395 + nmtg_ex_i, 395 + nmtg_ex_i + 1))
+            img_inpaint[ROI_TEMP] = img_nmtg_blank_ex
 
     if (is_blank):
         img_pil = Image.fromarray(img_inpaint)
@@ -295,11 +322,13 @@ while(video.isOpened()):
                 draw_x += span_w
 
     if (is_nmtg and len(nmtg)):
-        img_draw_nmtg = Image.new("RGB", img_nmtg_blank.shape[:2])
+        (shape_h, shape_w) = img_nmtg_blank.shape[:2]
+        shape_w = shape_w + nmtg_x
+        img_draw_nmtg = Image.new("RGB", (shape_h, shape_w))
         draw_nmtg = ImageDraw.Draw(img_draw_nmtg)
         w_nmtg, h_nmtg = draw.textsize(nmtg, font=font_nmtg)
         draw.text(
-            (ROI_NMTG_X0 + NM_NMTG_X_CENTER - w_nmtg / 2,
+            (ROI_NMTG_X0 + NM_NMTG_X_CENTER - w_nmtg / 2 + nmtg_x / 2,
              ROI_NMTG_Y0 + NM_NMTG_Y_CENTER - font_h_nmtg / 2),
             nmtg, fill=NMTG_COLOR, font=font_nmtg
         )
@@ -314,13 +343,15 @@ while(video.isOpened()):
 
 video.release()
 out_video.release()
+cv2.destroyAllWindows()
 
-ffcmd = "ffmpeg -y -vn -i " + reencode_video_name + \
-    " -acodec copy " + reencode_video_name + ".aac"
+ffcmd = "ffmpeg -y -vn -i " + inputvideo + \
+    " -acodec copy " + inputvideo + ".aac"
 print(ffcmd)
 subprocess.call(ffcmd, shell=True, env=env)
-ffcmd = "ffmpeg -y -i " + out_name + " -i " + reencode_video_name + ".aac -vcodec " + options.ffmpeg_encoder + " -preset slow -profile:v high -level:v 4.1 -pix_fmt yuv420p -b:v " + \
+ffcmd = "ffmpeg -y -i " + out_name + " -i " + inputvideo + ".aac -vcodec " + \
+    options.ffmpeg_encoder + " -preset slow -profile:v high -level:v 4.1 -pix_fmt yuv420p -b:v " + \
     options.bitrate + " -r 30 -acodec aac -strict -2 -ac 2 -ab " + \
-        options.audio_bitrate + " -ar 44100 -f flv " + inputvideo + ".autosubed.flv"
+    options.audio_bitrate + " -ar 44100 -f flv " + inputvideo + ".autosubed.flv"
 print(ffcmd)
 subprocess.call(ffcmd, shell=True, env=env)

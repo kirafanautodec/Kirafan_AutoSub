@@ -107,6 +107,7 @@ ut = 0
 clip_list = []
 nxt_report = 0
 video_index = video_start_num
+time = 0
 
 while(video.isOpened()):
     ret, rawImg = video.read()
