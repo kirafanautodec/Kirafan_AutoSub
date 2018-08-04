@@ -38,10 +38,12 @@ parser.add_option('-r', '--report',
 options, args = parser.parse_args()
 if (not len(args)):
     print("Missing input video.")
+    input()
     exit(-1)
 inputvideo = os.path.abspath(args[0])
 if (not os.path.isfile(inputvideo)):
     print("Can not open video file " + inputvideo)
+    input()
     exit(-1)
 
 # output dir
@@ -53,8 +55,9 @@ output_dir = dirname + ('/' if dirname else '') + basename + '_seq_video/'
 # re encode
 reencode_video_name = inputvideo + '_tmp_thumbnail.mp4'
 print("Re encode to CFR Video file: " + inputvideo)
-ffcmd = "ffmpeg -hide_banner -loglevel error -stats -y -i " + inputvideo + \
-    " -c:v h264 -preset ultrafast -r 30 -s 128x72 -an -f mp4 " + reencode_video_name
+ffcmd = 'ffmpeg -hide_banner -loglevel error -stats -y -i "' + inputvideo + '"' + \
+    ' -c:v h264 -preset ultrafast -r 30 -s 128x72 -an -f mp4 "' + \
+        reencode_video_name + '"'
 print("Invoking: " + ffcmd)
 subprocess.call(ffcmd, shell=True, env=env)
 print("Re-encoding Finished")
@@ -152,6 +155,11 @@ while(video.isOpened()):
 print("%06.2f" % time, "FINISHED.")
 video.release()
 
+if (len(clip_list) == 0):
+    ss = 0
+    t = (frame - 1) / fps
+    clip_list = [[0, ss, t]]
+
 for clip in clip_list:
     video_index = clip[0]
     ss = clip[1]
@@ -161,8 +169,8 @@ for clip in clip_list:
     print("-----------------------------------")
     os.makedirs(output_dir, exist_ok=True)
     cmd = "ffmpeg -ss " + str(ss) + " -t " + str(t) + " " + \
-        ' -i ' + inputvideo + FFMPEG_PARA + \
-        output_dir + ("%04d" % video_index) + ".mp4"
+        ' -i "' + inputvideo + '"' + FFMPEG_PARA + \
+        '"' + output_dir + ("%04d" % video_index) + '.mp4"'
     print(cmd)
     subprocess.call(cmd, shell=True)
 

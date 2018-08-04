@@ -12,7 +12,6 @@ a = Analysis(['analyse_video.py'],
              binaries=[],
              datas=[
                 (get_opencv_path() + '/opencv_ffmpeg340.dll', '.'),
-                ('./usr/ffmpeg.exe', '.'),
                 ('./usr/pattern0.png', './usr'),
                 ('./usr/pattern1.png', './usr')
              ],

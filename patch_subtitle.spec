@@ -12,7 +12,6 @@ a = Analysis(['patch_subtitle.py'],
              binaries=[],
              datas=[
                 (get_opencv_path() + '/opencv_ffmpeg340.dll','.'),
-                ('./usr/ffmpeg.exe', '.'),
                 ('./usr/nmtg.png', './usr'),
                 ('./usr/nmtgex.png', './usr'),
                 ('./usr/jpfont.ttf', './usr'),

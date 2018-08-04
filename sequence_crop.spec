@@ -12,7 +12,6 @@ a = Analysis(['sequence_crop.py'],
              binaries=[],
              datas=[
                 (get_opencv_path() + '/opencv_ffmpeg340.dll','.'),
-                ('./usr/ffmpeg.exe', '.')
              ],
              hiddenimports=[],
              hookspath=[],
