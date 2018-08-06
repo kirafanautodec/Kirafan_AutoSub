@@ -116,7 +116,7 @@ while(video.isOpened()):
     ret, rawImg = video.read()
     if not ret:
         break
-    img = rawImg[0:52, :]
+    img = rawImg[0:104, :]
     time = frame / fps
 
     if (time >= nxt_report):
