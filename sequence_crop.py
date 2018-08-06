@@ -24,7 +24,7 @@ parser.add_option('--start_num',
                   help="start num of sub index", default=1)
 parser.add_option('--threshold',
                   action="store", dest="threshold",
-                  help="color_threshold of detection", default=6)
+                  help="color_threshold of detection", default=8)
 parser.add_option('--pre_cut',
                   action="store", dest="pre_cut",
                   help="number of frames which will be cut after the starting position of every clip", default=8)
@@ -56,7 +56,7 @@ output_dir = dirname + ('/' if dirname else '') + basename + '_seq_video/'
 reencode_video_name = inputvideo + '_tmp_thumbnail.mp4'
 print("Re encode to CFR Video file: " + inputvideo)
 ffcmd = 'ffmpeg -hide_banner -loglevel error -stats -y -i "' + inputvideo + '"' + \
-    ' -c:v h264 -preset ultrafast -r 30 -s 128x72 -an -f mp4 "' + \
+    ' -c:v h264 -preset fast -r 30 -s 256*144 -an -f mp4 "' + \
         reencode_video_name + '"'
 print("Invoking: " + ffcmd)
 subprocess.call(ffcmd, shell=True, env=env)

@@ -60,7 +60,7 @@ if (not len(args)):
 arg0 = os.path.abspath(args[0])
 inputvideos = []
 if (os.path.isfile(arg0)):
-    if (arg0[-4] == '.mp4'):
+    if (arg0[-4:] == '.mp4'):
         inputvideos = [arg0]
 else:
     inputvideos = glob.glob(arg0 + '/' + '*.mp4')
