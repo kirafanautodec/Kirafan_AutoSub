@@ -92,7 +92,7 @@ def gensub(args):
     print("Opening " + inputfile)
     print("Writing " + outputfile)
     fp = open(inputfile, mode='r', encoding='utf-8')
-    ofp = open(outputfile, mode='w', encoding='ansi')
+    ofp = open(outputfile, mode='w')
     text = fp.read()
     if (not text):
         raise Exception("Text is empty")

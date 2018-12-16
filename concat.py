@@ -27,7 +27,7 @@ def concat(args):
     cmd = 'ffmpeg -y -f concat -safe 0 -i "' + \
         videolist + '" -c copy "' + filepwd + '/' + 'output.mp4"'
     print("Invoking " + cmd)
-    subprocess.call(cmd, shell=False)
+    subprocess.call(cmd, shell=True)
 
 
 if __name__ == '__main__':
