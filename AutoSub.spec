@@ -19,6 +19,7 @@ a = Analysis(['AutoSub.py'],
                 ('./usr/kofont.ttf', './usr'),
                 ('./usr/pattern0.png', './usr'),
                 ('./usr/pattern1.png', './usr'),
+                ('./usr/Void.wav', './usr'),
                 ('./usr/ffmpeg.exe', '.')
              ],
              hiddenimports=[],

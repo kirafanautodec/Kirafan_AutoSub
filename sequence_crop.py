@@ -168,7 +168,7 @@ def sequence_crop(args):
         cmd = "ffmpeg -ss " + str(ss) + " -t " + str(t) + " " + \
             ' -i "' + inputvideo + '"' + FFMPEG_PARA + \
             '"' + output_dir + ("%04d" % video_index) + '.mp4"'
-        print(cmd)
+        print("Invoking " + cmd)
         subprocess.call(cmd, shell=True)
 
     try:

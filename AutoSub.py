@@ -9,6 +9,7 @@ import analyse_video
 import patch_subtitle
 import gensub
 import concat
+import convert
 
 try:
     sys.setdefaultencoding('utf-8')
@@ -29,15 +30,16 @@ Please select function from below:
 3. Auto-Patch Subtitle from krfss Files
 4. Generate Title from Text File
 5. Concat Videos into A Single File
+6. Convert OP/ED/CM into mpeg4 Format
 ''')
 
 try:
     try:
-        user_select = int(input("Input from (1, 2, 3, 4, 5) >> "))
+        user_select = int(input("Input from (1, 2, 3, 4, 5, 6) >> "))
     except:
-        raise Exception("Unavailbe Selection")
-    if (not user_select in {1, 2, 3, 4, 5}):
-        raise Exception("Unavailbe Selection " + str(user_select))
+        raise Exception("Unavailable Selection")
+    if (not user_select in {1, 2, 3, 4, 5, 6}):
+        raise Exception("Unavailable Selection " + str(user_select))
 
     if user_select == 1:
         sequence_crop.sequence_crop(args)
@@ -47,8 +49,12 @@ try:
         patch_subtitle.patch_subtitle(args)
     elif user_select == 4:
         gensub.gensub(args)
-    else:
+    elif user_select == 5:
         concat.concat(args)
+    elif user_select == 6:
+        convert.convert(args)
+    else:
+        raise Exception("Unknown Selection")
 
 except Exception as e:
     print("ERROR: " + str(e))
