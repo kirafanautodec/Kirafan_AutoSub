@@ -9,10 +9,6 @@ import glob
 import sys
 import optparse
 import re
-from imutils.video import VideoStream
-from imutils.object_detection import non_max_suppression
-from imutils import paths
-from pathlib import Path
 
 
 def patch_subtitle(args):
