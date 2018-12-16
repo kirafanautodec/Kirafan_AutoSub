@@ -26,6 +26,8 @@ Use pre-built binaries:
 
 - Kirafan_AutoSub_windows_v7.1.0: https://drive.google.com/open?id=1iKLfj3sXYUuczl0wcyASQfYS3lqPe6y0
 
+- Kirafan_AutoSub_windows_v8.1.1: https://drive.google.com/file/d/1XyLcQZ8_95fTh6oWK-5cxKNMgeG-9ifB
+
 ### on Linux or Mac, (or you want to use it in terminal even on Window)
 
 #### Dependence
@@ -61,7 +63,7 @@ and make sure to include their directory in $PATH
   - WARNING: DON'T TRY TO PROCESS A RAW VIDEO BEFORE sequence_crop
 
 - Edit the generated autosub/&lt;videoname&gt.krfss file by
-  - Krfss_Editor (recommanded) ( https://github.com/kirafanautodec/Krfss_Editor , pre-built binaries on Windows: https://drive.google.com/open?id=1XDZ-TluLkJg7T0ClgSVo_1Ohd8UClVz2)
+  - Krfss_Editor (recommanded) ( https://github.com/kirafanautodec/Krfss_Editor )
     - Drag the .krfss file into the gray box
     - Edit the name and text in right two columns
     - Click the Save box to save file
@@ -90,8 +92,6 @@ and make sure to include their directory in $PATH
 ### The web-based editing tool
 
 refer https://github.com/kirafanautodec/Krfss_Editor
-
-pre-built binaries on Windows: https://drive.google.com/open?id=1XDZ-TluLkJg7T0ClgSVo_1Ohd8UClVz2)
 
 ## How it works
 
