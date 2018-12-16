@@ -7,13 +7,19 @@ def get_opencv_path():
     opencv_path = cv2.__path__[0]
     return opencv_path
 
-a = Analysis(['analyse_video.py'],
+a = Analysis(['AutoSub.py'],
              pathex=['.'],
              binaries=[],
              datas=[
-                (get_opencv_path() + '/opencv_ffmpeg340.dll', '.'),
+                (get_opencv_path() + '/opencv_ffmpeg340.dll','.'),
+                ('./usr/nmtg.png', './usr'),
+                ('./usr/nmtgex.png', './usr'),
+                ('./usr/jpfont.ttf', './usr'),
+                ('./usr/cnfont.ttf', './usr'),
+                ('./usr/kofont.ttf', './usr'),
                 ('./usr/pattern0.png', './usr'),
-                ('./usr/pattern1.png', './usr')
+                ('./usr/pattern1.png', './usr'),
+                ('./usr/ffmpeg.exe', '.')
              ],
              hiddenimports=[],
              hookspath=[],
@@ -34,7 +40,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='analyse_video',
+          name='KirafanAutoSub',
           debug=False,
           strip=False,
           upx=True,

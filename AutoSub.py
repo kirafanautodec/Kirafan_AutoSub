@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+import numpy as np
+import cv2
+import os
+import sys
+
+import sequence_crop
+import analyse_video
+import patch_subtitle
+import gensub
+import concat
+
+try:
+    sys.setdefaultencoding('utf-8')
+except:
+    pass
+
+args = ' '.join(sys.argv[1:])
+
+print('''
+Kirara Fantasia Auto Subtitle Patcher v 8.0.0
+Powered by Ayaya (twitter: @kirafan_autodec)
+''')
+print("Your args is: " + args)
+print('''
+Please select function from below:
+1. Crop and Reencode Raw Movie
+2. Analysis and Auto-Label to krfss Files
+3. Auto-Patch Subtitle from krfss Files
+4. Generate Title from Text File
+5. Concat Videos into A Single File
+''')
+
+try:
+    try:
+        user_select = int(input("Input from (1, 2, 3, 4, 5) >> "))
+    except:
+        raise Exception("Unavailbe Selection")
+    if (not user_select in {1, 2, 3, 4, 5}):
+        raise Exception("Unavailbe Selection " + str(user_select))
+
+    if user_select == 1:
+        sequence_crop.sequence_crop(args)
+    elif user_select == 2:
+        analyse_video.analyse_video(args)
+    elif user_select == 3:
+        patch_subtitle.patch_subtitle(args)
+    elif user_select == 4:
+        gensub.gensub(args)
+    else:
+        concat.concat(args)
+
+except Exception as e:
+    print("ERROR: " + str(e))
+    print("Exiting")
+    input()
