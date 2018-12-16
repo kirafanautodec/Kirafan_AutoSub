@@ -48,22 +48,22 @@ Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and se
     - This procedure will analysis and label texts in videos, and generate a `krfss` file and a image folder for each video in `autosub` folder.
 1. Translate  
 Edit those `krfss` files by **Krfss_Editor**
-    - Refer the tutorial of [Krfss_Editor](https://github.com/kirafanautodec/Krfss_Editor)
+    - Refer the tutorial of [Krfss_Editor](https://github.com/kirafanautodec/Krfss_Editor).
 1. Patch  
 Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 3 (Patch).
     - This procedure will apply the subtile file `krfss` and automatically patch them into videos.
-    - Besides, it will generate an empty `title.txt`, in which written as same lines of dummy titles as the number of videos, this file is used to generate titles for each sections
+    - Besides, it will generate an empty `title.txt`, in which written as same lines of dummy titles as the number of videos, this file is used to generate titles for each sections.
 1. Generate Title (Optional)  
     - Edit the `title.txt`, each line contains the title of each sections.
-    - If you want to use a multiple line title, use `\n`. Like `Line1\nLine2`
+    - If you want to use a multiple line title, use `\n`. Like `Line1\nLine2`.
     - Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 4 (GenTitle).
-    - This procedure will generate a title video of 3 seconds for each sections, and generated a `videolist.txt` file
+    - This procedure will generate a title video of 3 seconds for each sections, and generated a `videolist.txt` file.
 1. Concatenate  
     - Edit `videolist.txt` to add or remove some files to concat.
       - If you did not run **Generate Title**, create a new file named `videolist.txt` in the same folder of videos. As for the format of `videolist.txt`, refer to ffmpeg toturial of **video concatenating**.
     - If you want to insert Openning/Ending, convert them before you copy them and add to `videolist.txt`
       - To convert a video, drag it into `Kirafan_AutoSub.exe` and select 6 (Convert).
-      - The video after convertion is name `<video_name>.cvt.mp4`
+      - The video after convertion is named `<video_name>.cvt.mp4`.
       - In case you have to adjust aspect ratio or audio gain manually, refer to ffmpeg toturial.
     - Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 6 (Concat).
-    - The `output.mp4` is the final video
+    - The `output.mp4` is the final video.
