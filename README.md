@@ -35,30 +35,30 @@ Record a Kirara Fantasia story video, and copy it to an empty folder of your PC.
     - When recording, make sure to include the first **transition** from 図書館 to Story, since transition will be an important sign for detecting start and end of each section.
     - Click **Auto Button** after the first sentence of section are shown fully.
     - You can record all videos of one chapter continually, since this tool will crop them automatically, but we recommend to record 5 ~ 10 videos at one time.
-1. Crop
+1. Crop  
 Drag the record video into Kirafan_AutoSub.exe, and select 1 (Crop).
     - on Linux, run `python AutoSub.py <video_file>` instead.
     - This procedure will detect transition between sections and automatically seperate them.
     - It will create a folder named `<video_file>_seq_video`, and the seperated sections are named `0001.mp4`, `0002.mp4` and so on.
     - In case you recorded 1~5.mp4 and 6~10.mp4, run for them respectively, and rename the videofile manually in `6~10.mp4_seq_video` to `0006.mp4`, `0007.mp4` and so on. After that copy those files into the same folder for consequence procedure.
-1. Analysis and Label
+1. Analysis and Label  
 Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 2 (Analysis).
     - on Linux, run `python AutoSub.py <folder>` instead.
     - The program will ask your targer language, input one from `en`, `jp`, `cn`, `ko`.
     - This procedure will analysis and label texts in videos, and generate a `krfss` file and a image folder for each video in `autosub` folder.
-1. Translate
+1. Translate  
 Edit those `krfss` files by **Krfss_Editor**
     - Refer the tutorial of [Krfss_Editor](https://github.com/kirafanautodec/Krfss_Editor)
-1. Patch
+1. Patch  
 Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 3 (Patch).
     - This procedure will apply the subtile file `krfss` and automatically patch them into videos.
     - Besides, it will generate an empty `title.txt`, in which written as same lines of dummy titles as the number of videos, this file is used to generate titles for each sections
-1. Generate Title (Optional)
+1. Generate Title (Optional)  
     - Edit the `title.txt`, each line contains the title of each sections.
     - If you want to use a multiple line title, use `\n`. Like `Line1\nLine2`
     - Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 4 (GenTitle).
     - This procedure will generate a title video of 3 seconds for each sections, and generated a `videolist.txt` file
-1. Concatenate
+1. Concatenate  
     - Edit `videolist.txt` to add or remove some files to concat.
         - If you did not run **Generate Title**, create a new file named `videolist.txt` and refer to ffmpeg toturial of **video concatenating**.
     - If you want to insert Openning/Ending, convert them before you copy them and add to `videolist.txt`
