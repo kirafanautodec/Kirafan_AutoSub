@@ -92,7 +92,12 @@ def patch_subtitle(args):
         print(inputvideos)
         if (len(inputvideos) == 0):
             raise Exception("Can not open " + arg0)
-        Path(arg0 + '/title.txt').touch()
+        ofp = open(arg0 + '/title.txt', mode='w', encoding='utf-8')
+        for i in range(len(inputvideos)):
+            ofp.write(u"タイトル" + str(i + 1))
+            if (not i + 1 == len(inputvideos)):
+                ofp.write('\n')
+        ofp.close()
 
     for inputvideo in inputvideos:
         # output dir
