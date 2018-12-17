@@ -70,5 +70,5 @@ Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and se
       - To convert a video, drag it into `Kirafan_AutoSub.exe` and select 6 (Convert).
       - The video after convertion is named `<video_name>.cvt.mp4`.
       - In case you have to adjust aspect ratio or audio gain manually, refer to ffmpeg toturial.
-    - Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 6 (Concat).
+    - Drag the **folder** containing `0001.mp4` ... into `Kirafan_AutoSub.exe`, and select 5 (Concat).
     - The `output.mp4` is the final video.
