@@ -5,7 +5,7 @@
 1. 切割(Crop)
 1. 提取字幕文件(Analyse)
 1. 翻译(Krfss_editor)
-1. 打包(Patch)
+1. 嵌字(Patch)
 1. 制作小节标题(Gensub)
 1. 根据需要加OPED(Convert) (可选)
 1. 连接成一个视频文件(Concat)
@@ -93,9 +93,9 @@
 1. 打开Krfss_Editor，把`autosub`中的`*.krfss`文件拖放到左上角的灰色按钮，即可编辑。
     - 尽量在句子开头换行。（方便校对）
 
-# 4. 打包（Patch）
+# 4. 嵌字（Patch）
 1. 把翻译好的`*.krfss`文件复制到`autosub`文件夹里，替换掉原有的`*.krfss`。
-1. 把**带有视频的整个文件夹**拖放到`Kirafan_AutoSub.exe`上，等待出现命令提示后输入`3`并回车，即可开始打包。打包完成后会生成`0001.mp4.autosubed.mp4`这样的文件。并在视频文件夹下出现标题文件`title.txt`
+1. 把**带有视频的整个文件夹**拖放到`Kirafan_AutoSub.exe`上，等待出现命令提示后输入`3`并回车，即可自动嵌字。嵌字完成后会生成`0001.mp4.autosubed.mp4`这样的文件。并在视频文件夹下出现标题文件`title.txt`
 
 # 5. 制作标题（GenTitle）
 1. 用记事本打开**视频文件夹**下的`title.txt`，修改各章节的标题，输入时遵循如下规则：
