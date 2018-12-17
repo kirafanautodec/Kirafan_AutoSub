@@ -429,6 +429,7 @@ def analyse_video(args):
             "version": '8.1.2',
             "total": len(nmtg_map),
             "lang": currentlang,
+            "title": "",
             "nmtgs": json_nmtgs,
             "trans": json_trans,
             "nmtg_map": nmtg_map,

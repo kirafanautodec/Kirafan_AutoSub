@@ -63,6 +63,21 @@ def patch_subtitle(args):
     parser.add_option('--fontsize',
                       action="store", dest="fontsize",
                       help="font size of translated text", default=35)
+    parser.add_option('--fontsize_title',
+                      action="store", dest="fontsize_title",
+                      help="fontsize of title", default=64)
+    parser.add_option('--colorR',
+                      action="store", dest="colorR",
+                      help="color red", default=255)
+    parser.add_option('--colorG',
+                      action="store", dest="colorG",
+                      help="color green", default=236)
+    parser.add_option('--colorB',
+                      action="store", dest="colorB",
+                      help="color blue", default=211)
+    parser.add_option('--positionY',
+                      action="store", dest="positionY",
+                      help="title position in Y axis", default=480)
     parser.add_option('--fontsize_nmtg',
                       action="store", dest="fontsize_nmtg",
                       help="font size of translated name tag", default=33)
@@ -79,6 +94,7 @@ def patch_subtitle(args):
     arg0 = os.path.abspath(args[0])
 
     inputvideos = []
+    single_file = True
     if (os.path.isfile(arg0)):
         if (arg0[-4:] == '.mp4'):
             inputvideos = [arg0]
@@ -88,12 +104,9 @@ def patch_subtitle(args):
         print(inputvideos)
         if (len(inputvideos) == 0):
             raise Exception("Can not open " + arg0)
-        ofp = open(arg0 + '/title.txt', mode='w', encoding='utf-8')
-        for i in range(len(inputvideos)):
-            ofp.write(u"タイトル" + str(i + 1))
-            if (not i + 1 == len(inputvideos)):
-                ofp.write('\n')
-        ofp.close()
+        outputfile = arg0 + '/videolist.txt'
+        single_file = False
+        ofp = open(outputfile, mode='w')
 
     for inputvideo in inputvideos:
         # output dir
@@ -175,6 +188,7 @@ def patch_subtitle(args):
         print(script["nmtgs"])
 
         # POSITION DEFINITION
+        W = 1280
         ROI = (slice(500, 710), slice(70, 1140))
         ROI_NMTG_X0 = 15
         ROI_NMTG_Y0 = 7
@@ -219,6 +233,7 @@ def patch_subtitle(args):
         frame = 0
         font_text = ImageFont.truetype(fontf, int(options.fontsize))
         font_nmtg = ImageFont.truetype(fontf, int(options.fontsize_nmtg))
+        font_title = ImageFont.truetype(fontf, int(options.fontsize_title))
         font_size_max = 1 * max(int(options.fontsize),
                                 int(options.fontsize_nmtg)) + 20
         img_draw_temp = Image.new("RGB", (font_size_max * 20, font_size_max))
@@ -351,9 +366,45 @@ def patch_subtitle(args):
                 img_drawed = np.array(img_pil)
                 img_rot[ROI] = img_drawed
 
-            cv2.imshow("img_merged", img_rot)
+            # Print Title
+            def mytext(draw, pos, text, font, fill, border='black', bp=2):
+                x, y = pos
+                shadowcolor = border
+                draw.text((x-bp, y), text, font=font, fill=shadowcolor)
+                draw.text((x+bp, y), text, font=font, fill=shadowcolor)
+                draw.text((x, y-bp), text, font=font, fill=shadowcolor)
+                draw.text((x, y+bp), text, font=font, fill=shadowcolor)
+                # thicker border
+                draw.text((x-bp, y-bp), text, font=font, fill=shadowcolor)
+                draw.text((x+bp, y-bp), text, font=font, fill=shadowcolor)
+                draw.text((x-bp, y+bp), text, font=font, fill=shadowcolor)
+                draw.text((x+bp, y+bp), text, font=font, fill=shadowcolor)
+                # now draw the text over it
+                draw.text((x, y), text, font=font, fill=fill)
+
+            TITLE_DISAPPEAR = 55
+            TITLE_OUT = 45
+            if (frame < TITLE_DISAPPEAR and ("title" in script) and len(script["title"])):
+                title = script["title"].replace('\\n', '\n')
+                Img_rot = Image.fromarray(img_rot)
+                draw = ImageDraw.Draw(Img_rot)
+                w, h = draw.textsize(title, font=font_title)
+                mytext(draw, ((W-w)/2, int(options.positionY) - h/2), title, font=font_title,
+                       fill=(int(options.colorB), int(options.colorG), int(options.colorR)))
+
+                if (frame < TITLE_OUT and False):
+                    img_merged = np.array(Img_rot)
+                else:
+                    alpha = (frame - TITLE_OUT) / (TITLE_DISAPPEAR - TITLE_OUT)
+                    img_drawed = np.array(Img_rot)
+                    img_merged = cv2.addWeighted(
+                        img_drawed, 1 - alpha, img_rot, alpha, 0)
+            else:
+                img_merged = img_rot
+
+            cv2.imshow("img_merged", img_merged)
             cv2.waitKey(1)
-            out_video.write(img_rot)
+            out_video.write(img_merged)
 
         video.release()
         out_video.release()
@@ -369,8 +420,15 @@ def patch_subtitle(args):
         print("Invoking " + ffcmd)
         subprocess.call(ffcmd, shell=True, env=env)
 
+        if not single_file:
+            ofp.write("file " + "'" + os.path.basename(inputvideo) +
+                      ".autosubed.mp4" + "'" + '\n')
+
         os.remove(out_name)
         os.remove('autosubed_tmp.aac')
+
+    if not single_file:
+        ofp.close()
 
 
 if __name__ == '__main__':
