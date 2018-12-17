@@ -27,7 +27,7 @@ And install the dependences below:
     - ffmpeg  
 
 ### Usage
-1. Record
+1. Record  
 Record a Kirara Fantasia story video, and copy it to an empty folder of your PC.
     - The folder name and video names **must not** include any **non-ansi** characters.
     - It is recommend to record by iOS built-in recording function.
