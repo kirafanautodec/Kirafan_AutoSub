@@ -14,7 +14,7 @@
 - 对于使用Windows的大部分用户, 请从[这里](https://drive.google.com/file/d/1XyLcQZ8_95fTh6oWK-5cxKNMgeG-9ifB)下载编译好的最新版工具(v8.1.1)。
 下载后解压到一个文件夹里，并确保这个文件夹的路径没有任何**中文或者日文字符**。
 后续大部分工作都会在这个文件夹里进行，下文简称**工作目录**。
-- 对于使用Linux以MacOS的用户，需要克隆本repo到一个干净的目录下，并安装以下依赖：
+- 对于使用Linux和MacOS的用户，需要克隆本repo到一个干净的目录下，并安装以下依赖：
     - python3
     - python 依赖库
         - pillow
