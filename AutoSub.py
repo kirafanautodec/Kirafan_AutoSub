@@ -19,7 +19,7 @@ except:
 args = ' '.join(sys.argv[1:])
 
 print('''
-Kirara Fantasia Auto Subtitle Patcher v 8.0.0
+Kirara Fantasia Auto Subtitle Patcher v8.1.2
 Powered by Ayaya (twitter: @kirafan_autodec)
 ''')
 print("Your args is: " + args)
