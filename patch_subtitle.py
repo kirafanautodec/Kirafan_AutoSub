@@ -108,14 +108,21 @@ def patch_subtitle(args):
         single_file = False
         ofp = open(outputfile, mode='w')
 
+    inputvideos.sort()
+    num_videos = len(inputvideos)
+    video_index = 0
     for inputvideo in inputvideos:
+        video_index += 1
+        print("Progress: " + ("%04d" % video_index) +
+              " / " + ("%04d" % num_videos))
+
         # output dir
         basename = os.path.basename(inputvideo)
         dirname = os.path.dirname(inputvideo)
 
         script_dir = dirname + ('/' if dirname else '') + 'autosub'
         script_fn = script_dir + '/' + basename + '.krfss'
-        print("Script file: " + script_fn)
+        print("  Reading script file: " + script_fn)
         if (not os.path.isfile(script_fn)):
             raise Exception("Can not open script file " + script_fn)
 
@@ -151,6 +158,7 @@ def patch_subtitle(args):
             fontf = fontDir + '/jpfont.ttf'
 
         for command in script["timestamp"]:
+            last_frame = 0
             frame = int(command["at"])
             action = command["action"]
             if (action == 'S' or action == 'E' or action == 'C'):
@@ -179,13 +187,14 @@ def patch_subtitle(args):
                 for i in range(frame_index_temp1, frame + 1):
                     frame_havenmtg[i] = False
                 frame_index_temp1 = frame
+                last_frame = frame
             if (action == 'N'):
                 nmtg_y = int(command["y"])
                 nmtg_x = int(command["ex"])
                 frame_nmtgtransition[frame] = (nmtg_y, nmtg_x)
 
-        print(script["trans"])
-        print(script["nmtgs"])
+        # print(script["trans"])
+        # print(script["nmtgs"])
 
         # POSITION DEFINITION
         W = 1280
@@ -271,18 +280,18 @@ def patch_subtitle(args):
                 cmd = frame_cmds[frame]
                 if (cmd == 'C'):
                     str_todraw = ''
-                    print(frame, "C")
+                    #print(frame, "C")
                 if (cmd == 'S'):
                     last_typed_start = frame
                     index_sub = frame_subindex[frame]
                     str_typed_cache = script["trans"][index_sub]
-                    print(frame, "S")
-                    print(str_typed_cache)
+                    #print(frame, "S")
+                    # print(str_typed_cache)
                 if (cmd == 'E'):
                     str_todraw += str_typed_cache
                     str_typed_cache = ''
-                    print(frame, "E")
-                    print(str_todraw)
+                    #print(frame, "E")
+                    # print(str_todraw)
 
             is_blank = frame_haveblank[frame]
             is_nmtg = frame_havenmtg[frame]
@@ -406,18 +415,25 @@ def patch_subtitle(args):
             cv2.waitKey(1)
             out_video.write(img_merged)
 
+            progress = int(frame / last_frame * 100)
+            prog_char = int(progress / 4)
+            print("  >" + "*" * prog_char +
+                  "." * (25 - prog_char) + ("%03d" % progress) + "%",
+                  end='\r')
+
         video.release()
         out_video.release()
         cv2.destroyAllWindows()
+        print("\n")
 
-        ffcmd = 'ffmpeg -y -hide_banner -loglevel error -stats -vn -i "' + inputvideo + '"' + \
+        ffcmd = 'ffmpeg -y -hide_banner -loglevel error -vn -i "' + inputvideo + '"' + \
             " -acodec copy " + 'autosubed_tmp.aac'
-        print("Invoking " + ffcmd)
+        print("  Invoking " + ffcmd)
         subprocess.call(ffcmd, shell=True, env=env)
-        ffcmd = 'ffmpeg -y -hide_banner -loglevel error -stats -vn -i "' + out_name + '"' + \
+        ffcmd = 'ffmpeg -y -hide_banner -loglevel error -vn -i "' + out_name + '"' + \
             " -i " + 'autosubed_tmp.aac' + \
             " -codec copy " + '"' + inputvideo + ".autosubed.mp4" + '"'
-        print("Invoking " + ffcmd)
+        print("  Invoking " + ffcmd)
         subprocess.call(ffcmd, shell=True, env=env)
 
         if not single_file:

@@ -5,6 +5,7 @@ import subprocess
 import os
 import glob
 import sys
+import re
 import optparse
 
 
@@ -78,47 +79,53 @@ def analyse_video(args):
         if (arg0[-4:] == '.mp4'):
             inputvideos = [arg0]
     else:
-        inputvideos = glob.glob(arg0 + '/' + '*.mp4')
+        inputvideos = [arg0 + '/' + f for f in os.listdir(
+            arg0) if re.search(r'^.*\d+\.mp4$', f)]
+        print(inputvideos)
+        if (len(inputvideos) == 0):
+            raise Exception("Can not open " + arg0)
 
-    if (len(inputvideos) == 0):
-        print("Can not open " + arg0)
-        input()
-        exit(-1)
+    # Ask Language
+    currentlang = "cn"
+    lang_config_f = python_dir + '/lang.config'
+    if (os.path.isfile(lang_config_f)):
+        with open(lang_config_f, mode='r', encoding='utf-8') as fp:
+            currentlang = fp.read()
+        print("lang.config exists using " +
+              currentlang + " as target language")
+    else:
+        print("PLEASE SPECIFY YOUR TARGET LANGUAGE!")
+        print("FROM THE FOLLOWING LIST")
+        print("For Chinese,  input cn")
+        print("For English,  input en")
+        print("For Korean,   input ko")
+        print("For Japanese, input jp")
+        print("For Others,   keep empty")
+        currentlang = input("input >")
+        with open(lang_config_f, mode='w', encoding='utf-8') as fp:
+            fp.write(currentlang)
 
+    inputvideos.sort()
+    num_videos = len(inputvideos)
+    video_index = 0
     for inputvideo in inputvideos:
+        video_index += 1
+        print("Progress: " + ("%04d" % video_index) +
+              " / " + ("%04d" % num_videos))
+
         # output dir
-        print("Inputvideo: " + inputvideo)
+        print("  Inputvideo: " + inputvideo)
         basename = os.path.basename(inputvideo)
         dirname = os.path.dirname(inputvideo)
         output_dir = dirname + ('/' if dirname else '') + 'autosub'
 
         script_output = output_dir + '/' + basename + '.krfss'
         img_output_dir = output_dir + '/' + basename + '_img'
-        print("Script output: " + script_output)
-        print("Image output directory: " + img_output_dir)
+        print("  Script output: " + script_output)
+        print("  Image output directory: " + img_output_dir)
 
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(img_output_dir, exist_ok=True)
-
-        # Ask Language
-        currentlang = "cn"
-        lang_config_f = python_dir + '/lang.config'
-        if (os.path.isfile(lang_config_f)):
-            with open(lang_config_f, mode='r', encoding='utf-8') as fp:
-                currentlang = fp.read()
-            print("lang.config exists using " +
-                  currentlang + " as target language")
-        else:
-            print("PLEASE SPECIFY YOUR TARGET LANGUAGE!")
-            print("FROM THE FOLLOWING LIST")
-            print("For Chinese,  input cn")
-            print("For English,  input en")
-            print("For Korean,   input ko")
-            print("For Japanese, input jp")
-            print("For Others,   keep empty")
-            currentlang = input("input >")
-            with open(lang_config_f, mode='w', encoding='utf-8') as fp:
-                fp.write(currentlang)
 
         # timestamp array
         timestamp_data = []
@@ -208,6 +215,7 @@ def analyse_video(args):
         video_name = inputvideo
         video = cv2.VideoCapture(video_name)
         fps = video.get(cv2.CAP_PROP_FPS)
+        last_frame = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         frame = 0
 
         # last character position of textarea
@@ -302,7 +310,7 @@ def analyse_video(args):
 
                 # Write Nmtg Y
                 if (nmtg_y > 1):
-                    print("Nmtg Transition", frame, nmtg_y, nmtg_x)
+                    #print("Nmtg Transition", frame, nmtg_y, nmtg_x)
                     timestamp_data.append(
                         {"at": frame, "action": "N", "y": nmtg_y, "ex": nmtg_x}
                     )
@@ -329,10 +337,10 @@ def analyse_video(args):
 
             if (not is_blank_last == int(is_blank)):
                 if (is_blank):
-                    print("TextArea In", frame)
+                    #print("TextArea In", frame)
                     timestamp_data.append({"at": frame, "action": "T"})
                 else:
-                    print("TextArea Out", frame)
+                    #print("TextArea Out", frame)
                     timestamp_data.append({"at": frame, "action": "X"})
                 is_blank_last = int(is_blank)
 
@@ -340,7 +348,7 @@ def analyse_video(args):
             if (status == 0):
                 # Start of a Line
                 if (textpos > 0):
-                    print("LN", frame)
+                    #print("LN", frame)
                     timestamp_data.append({"at": frame, "action": "L"})
                     # Status -> 1
                     status = 1
@@ -348,7 +356,7 @@ def analyse_video(args):
                     last_change = frame
                     last_textpos_store = 0
                     if (storing == 0):
-                        print("Start", frame)
+                        #print("Start", frame)
                         timestamp_data.append(
                             {"at": frame, "action": "S", "sub": index_sub})
                         storing = 1
@@ -359,7 +367,7 @@ def analyse_video(args):
                 if (is_textpos_changed > 0):
                     last_change = frame
                     if (storing == 0):
-                        print("Start", frame)
+                        #print("Start", frame)
                         timestamp_data.append(
                             {"at": frame, "action": "S", "sub": index_sub})
                         storing = 1
@@ -368,7 +376,7 @@ def analyse_video(args):
                     # wait <wait_frame_threshold> and then store.
                     if (frame - last_change > int(options.wait_frame_threshold) and abs(last_textpos_store - textpos) > int(options.textpos_threshold)):
                         frame_real = frame - int(options.wait_frame_threshold)
-                        print("End", frame_real)
+                        #print("End", frame_real)
                         timestamp_data.append(
                             {"at": frame_real, "action": "E", "sub": index_sub})
                         storing = 0
@@ -390,7 +398,7 @@ def analyse_video(args):
                             img_line_color_o, 0.85, img_line_color_c, 0.15, 1)
                         imwrite(img_output_dir + '/' + "text_" +
                                 ("%04d" % index_sub)+".png", img_line_color)
-                        print("index_sub: " + str(index_sub))
+                        #print("index_sub: " + str(index_sub))
 
                         # Get NameTag Area
                         ROI_NMTG = (slice(7, 50), slice(15, 390 + nmtg_x))
@@ -399,14 +407,14 @@ def analyse_video(args):
                         # Store NameTag
                         nmtg_index = get_nmtg_index(img_nmtg, nmtg_x)
                         nmtg_map.append(nmtg_index)
-                        print("nmtg_index: " + str(nmtg_index))
+                        #print("nmtg_index: " + str(nmtg_index))
 
                         index_sub += 1
                         last_textpos_store = textpos
 
                 # Carriage return
                 if (is_textpos_changed < 0):
-                    print("CR", frame)
+                    #print("CR", frame)
                     timestamp_data.append({"at": frame, "action": "C"})
                     status = 0
 
@@ -415,8 +423,15 @@ def analyse_video(args):
             cv2.waitKey(1)
             last_textpos = textpos
 
-        print("All End", frame)
+            progress = int(frame / last_frame * 100)
+            prog_char = int(progress / 4)
+            print("  >" + "*" * prog_char +
+                  "." * (25 - prog_char) + ("%03d" % progress) + "%",
+                  end='\r')
+
+        #print("All End", frame)
         video.release()
+        print("\n")
         timestamp_data.append({"at": frame, "action": "O"})
 
         # Write to json file
