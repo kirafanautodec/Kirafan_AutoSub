@@ -37,7 +37,7 @@ def convert(args):
     cmd = "ffmpeg" + ' -i "' + inputvideo + '"' + FFMPEG_PARA + \
         '"' + outputfile + '"'
     print("Invoking " + cmd)
-    subprocess.call(cmd, shell=True)
+    subprocess.call(cmd, shell=True, env=env)
 
 
 if __name__ == '__main__':

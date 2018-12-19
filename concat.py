@@ -11,6 +11,13 @@ def concat(args):
     except:
         pass
 
+    python_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    currPath = sys.path[0]
+    highPath = os.path.split(currPath)[0]
+    env = os.environ.copy()
+    spliter = ';' if os.name == 'nt' else ':'
+    env["PATH"] = python_dir + spliter + highPath + spliter + env["PATH"]
+
     parser = optparse.OptionParser(args)
     options, args = parser.parse_args()
 
@@ -27,7 +34,7 @@ def concat(args):
     cmd = 'ffmpeg -y -f concat -safe 0 -i "' + \
         videolist + '" -c copy "' + filepwd + '/' + 'output.mp4"'
     print("Invoking " + cmd)
-    subprocess.call(cmd, shell=True)
+    subprocess.call(cmd, shell=True, env=env)
 
 
 if __name__ == '__main__':

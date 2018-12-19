@@ -169,7 +169,7 @@ def sequence_crop(args):
             ' -i "' + inputvideo + '"' + FFMPEG_PARA + \
             '"' + output_dir + ("%04d" % video_index) + '.mp4"'
         print("Invoking " + cmd)
-        subprocess.call(cmd, shell=True)
+        subprocess.call(cmd, shell=True, env=env)
 
     try:
         os.remove(reencode_video_name)
